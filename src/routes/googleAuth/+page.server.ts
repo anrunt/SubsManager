@@ -1,6 +1,13 @@
 import type { PageServerLoad } from "./$types";
-import type { YouTubeSubscription } from '$lib/types/types';
+import { oauth2Client, scopes } from "$lib/auth/auth";
 
 export const load: PageServerLoad = async () => {
-  console.log()
+  const url = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: scopes
+  });
+
+  return {
+    url: url
+  };
 }
