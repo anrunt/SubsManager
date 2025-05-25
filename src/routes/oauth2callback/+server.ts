@@ -3,7 +3,6 @@ import type { RequestHandler } from "./$types";
 import { oauth2Client } from "$lib/auth/auth";
 
 export const GET: RequestHandler = async ({ url }) => {
-  console.log("Im working!");
   const code = url.searchParams.get("code");
 
   console.log("Code: ", code);
@@ -16,7 +15,6 @@ export const GET: RequestHandler = async ({ url }) => {
 
   oauth2Client.setCredentials(tokens);
 
-  console.log("Credentials set!");
 
   throw redirect(302, "/dashboard");
 };
