@@ -1,1 +1,0 @@
-<h1>OAuth2 Callback</h1>
