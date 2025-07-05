@@ -35,6 +35,7 @@
     "vite": "^6.2.5"
   },
   "dependencies": {
+    "@upstash/redis": "^1.35.1",
     "arctic": "^3.7.0",
     "dotenv": "^16.5.0",
     "googleapis": "^149.0.0",
