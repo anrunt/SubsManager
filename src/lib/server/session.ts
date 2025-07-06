@@ -3,33 +3,33 @@ import { redis_client } from '../db/redis';
 const sessionExpiresInSeconds = 60 * 60 * 24; // 1 day
 
 function generateSecureRandomString(): string {
-	const alphabet = "abcdefghijklmnpqrstuvwxyz23456789";
+  const alphabet = "abcdefghijklmnpqrstuvwxyz23456789";
 
-	const bytes = new Uint8Array(24);
-	crypto.getRandomValues(bytes);
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
 
-	let id = "";
-	for (let i = 0; i < bytes.length; i++) {
-		id += alphabet[bytes[i] >> 3];
-	}
-	return id;
+  let id = "";
+  for (let i = 0; i < bytes.length; i++) {
+    id += alphabet[bytes[i] >> 3];
+  }
+  return id;
 }
 
 async function hashSecret(secret: string): Promise<Uint8Array> {
-	const secretBytes = new TextEncoder().encode(secret);
-	const secretHashBuffer = await crypto.subtle.digest("SHA-256", secretBytes);
-	return new Uint8Array(secretHashBuffer);
+  const secretBytes = new TextEncoder().encode(secret);
+  const secretHashBuffer = await crypto.subtle.digest("SHA-256", secretBytes);
+  return new Uint8Array(secretHashBuffer);
 }
 
 function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
-	if (a.byteLength !== b.byteLength) {
-		return false;
-	}
-	let c = 0;
-	for (let i = 0; i < a.byteLength; i++) {
-		c |= a[i] ^ b[i];
-	}
-	return c === 0;
+  if (a.byteLength !== b.byteLength) {
+    return false;
+  }
+  let c = 0;
+  for (let i = 0; i < a.byteLength; i++) {
+    c |= a[i] ^ b[i];
+  }
+  return c === 0;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,20 +57,20 @@ function checkRedisSessionResult(data: any): data is RedisSession {
 }
 
 export async function createSession(): Promise<SessionWithToken> {
-	const now = new Date();
+  const now = new Date();
 
-	const id = generateSecureRandomString();
-	const secret = generateSecureRandomString();
-	const secretHash = await hashSecret(secret);
+  const id = generateSecureRandomString();
+  const secret = generateSecureRandomString();
+  const secretHash = await hashSecret(secret);
 
-	const token = id + "." + secret;
+  const token = id + "." + secret;
 
-	const session: SessionWithToken = {
-		id,
-		secretHash,
-		createdAt: now,
-		token
-	};
+  const session: SessionWithToken = {
+    id,
+    secretHash,
+    createdAt: now,
+    token
+  };
 
   const createdAtTimestamp = Math.floor(session.createdAt.getTime() / 1000);
 
@@ -81,17 +81,17 @@ export async function createSession(): Promise<SessionWithToken> {
     createdAt: createdAtTimestamp.toString()
   });
 
-	return session;
+  return session;
 }
 
 export async function validateSessionToken(token: string): Promise<Session | null> {
-	const tokenParts = token.split(".");
-	if (tokenParts.length != 2) {
-		return null;
-	}
+  const tokenParts = token.split(".");
+  if (tokenParts.length != 2) {
+    return null;
+  }
 
-	const sessionId = tokenParts[0];
-	const sessionSecret = tokenParts[1];
+  const sessionId = tokenParts[0];
+  const sessionSecret = tokenParts[1];
 
   // Get session from redis
   const session = await getSession(sessionId);
@@ -99,20 +99,20 @@ export async function validateSessionToken(token: string): Promise<Session | nul
     return null;
   }
 
-	const tokenSecretHash = await hashSecret(sessionSecret);
-	const validSecret = constantTimeEqual(tokenSecretHash, session.secretHash);
-	if (!validSecret) {
-		return null;
-	}
+  const tokenSecretHash = await hashSecret(sessionSecret);
+  const validSecret = constantTimeEqual(tokenSecretHash, session.secretHash);
+  if (!validSecret) {
+    return null;
+  }
 
-	return session;
+  return session;
 }
 
 async function getSession(sessionId: string): Promise<Session | null> {
-	const now = new Date();
+  const now = new Date();
 
   // Get session from redis and check if its not null
-  const result:RedisSession = await redis_client.hgetall(`session:${sessionId}`);
+  const result: RedisSession = await redis_client.hgetall(`session:${sessionId}`);
   if (!result) {
     return null;
   }
@@ -154,5 +154,5 @@ export interface Session {
 }
 
 interface SessionWithToken extends Session {
-	token: string;
+  token: string;
 }
