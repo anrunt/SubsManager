@@ -1,6 +1,13 @@
 <script lang="ts">
+  import { onMount } from "svelte";
 
+  let { data } = $props();
+
+  onMount(() => {
+    console.log(data);
+  });
 </script>
+
 
 <div class="min-h-screen flex flex-col items-center justify-center gap-4 bg-black">
   <a href="login" class="w-72 h-16 text-xl rounded-md flex cursor-pointer items-center justify-center bg-white p-2 text-black">

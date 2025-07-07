@@ -10,5 +10,7 @@ export const google = new Google(
 )
 
 export const scopes = [
-  'https://www.googleapis.com/auth/youtube.readonly'
+  "openid",
+  "profile",
+  "https://www.googleapis.com/auth/youtube.readonly"
 ]

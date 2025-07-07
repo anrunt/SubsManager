@@ -1,158 +1,100 @@
+import type { RequestEvent } from '@sveltejs/kit';
 import { redis_client } from '../db/redis';
+import { z } from 'zod';
 
-const sessionExpiresInSeconds = 60 * 60 * 24; // 1 day
+const sessionDataSchema = z.object({
+  googleUserId: z.string(),
+  username: z.string(),
+  accessToken: z.string(),
+//  refreshToken: z.string(),
+  expiresAt: z.number()
+});
 
-function generateSecureRandomString(): string {
-  const alphabet = "abcdefghijklmnpqrstuvwxyz23456789";
-
-  const bytes = new Uint8Array(24);
-  crypto.getRandomValues(bytes);
-
-  let id = "";
-  for (let i = 0; i < bytes.length; i++) {
-    id += alphabet[bytes[i] >> 3];
-  }
-  return id;
-}
-
-async function hashSecret(secret: string): Promise<Uint8Array> {
-  const secretBytes = new TextEncoder().encode(secret);
-  const secretHashBuffer = await crypto.subtle.digest("SHA-256", secretBytes);
-  return new Uint8Array(secretHashBuffer);
-}
-
-function constantTimeEqual(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.byteLength !== b.byteLength) {
-    return false;
-  }
-  let c = 0;
-  for (let i = 0; i < a.byteLength; i++) {
-    c |= a[i] ^ b[i];
-  }
-  return c === 0;
-}
+export type UserSessionData = z.infer<typeof sessionDataSchema>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parseRedisSessionResult(data: any): RedisSession {
+function parseRedisSessionResult(data: any): UserSessionData | null {
   try {
-    return {
-      id: data.id,
-      secretHash: Uint8Array.from(
-        Buffer.from(data.secretHash, "base64")
-      ),
-      createdAt: Number(data.createdAt)
-    }
-  } catch {
+    return sessionDataSchema.parse(data);
+  } catch(error) {
+    console.error("Invalid session data", error);
     return null;
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function checkRedisSessionResult(data: any): data is RedisSession {
-  return (
-    typeof data?.id === "string" &&
-    data?.secretHash instanceof Uint8Array &&
-    typeof data?.createdAt === "number"
-  )
-}
-
-export async function createSession(): Promise<SessionWithToken> {
-  const now = new Date();
-
-  const id = generateSecureRandomString();
-  const secret = generateSecureRandomString();
-  const secretHash = await hashSecret(secret);
-
-  const token = id + "." + secret;
-
-  const session: SessionWithToken = {
-    id,
-    secretHash,
-    createdAt: now,
-    token
-  };
-
-  const createdAtTimestamp = Math.floor(session.createdAt.getTime() / 1000);
-
-  // Redis saves in base64
-  await redis_client.hset(`session:${session.id}`, {
-    id: session.id,
-    secretHash: Buffer.from(session.secretHash).toString("base64"),
-    createdAt: createdAtTimestamp.toString()
+export async function createSession(sessionId: string, userData: UserSessionData): Promise<UserSessionData> {
+  const sessionKey = `session:${sessionId}`;
+  await redis_client.hset(sessionKey, {
+    googleUserId: userData.googleUserId,
+    username: userData.username,
+    accessToken: userData.accessToken,
+//    refreshToken: userData.refreshToken,
+    expiresAt: (Date.now() + 1000 * 60 * 60 * 24 * 30).toString() // 30 days
   });
+  // Check if this is correct approach
+  await redis_client.expire(sessionKey, 60 * 60 * 24 * 30); // 30 days
 
-  return session;
-}
-
-export async function validateSessionToken(token: string): Promise<Session | null> {
-  const tokenParts = token.split(".");
-  if (tokenParts.length != 2) {
-    return null;
-  }
-
-  const sessionId = tokenParts[0];
-  const sessionSecret = tokenParts[1];
-
-  // Get session from redis
-  const session = await getSession(sessionId);
-  if (!session) {
-    return null;
-  }
-
-  const tokenSecretHash = await hashSecret(sessionSecret);
-  const validSecret = constantTimeEqual(tokenSecretHash, session.secretHash);
-  if (!validSecret) {
-    return null;
+  const session: UserSessionData = {
+    googleUserId: userData.googleUserId,
+    username: userData.username,
+    accessToken: userData.accessToken,
+//    refreshToken: userData.refreshToken,
+    expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
   }
 
   return session;
 }
 
-async function getSession(sessionId: string): Promise<Session | null> {
-  const now = new Date();
-
-  // Get session from redis and check if its not null
-  const result: RedisSession = await redis_client.hgetall(`session:${sessionId}`);
-  if (!result) {
+export async function validateSession(sessionId: string): Promise<UserSessionData | null> {
+  const sessionKey = `session:${sessionId}`;
+  const sessionData = await redis_client.hgetall(sessionKey);
+  if (!sessionData || Object.keys(sessionData).length === 0) {
     return null;
   }
 
-  const redisSession = parseRedisSessionResult(result);
-
-  if (!redisSession || !checkRedisSessionResult(redisSession)) {
+  const parsedSessionData = parseRedisSessionResult(sessionData);
+  if (!parsedSessionData) {
     return null;
   }
 
-  const session: Session = {
-    id: redisSession.id,
-    secretHash: redisSession.secretHash,
-    createdAt: new Date(redisSession.createdAt * 1000)
-  };
-
-  if (now.getTime() - session.createdAt.getTime() >= sessionExpiresInSeconds * 1000) {
-    await deleteSession(sessionId);
+  if (Date.now() > parsedSessionData.expiresAt) {
+    await redis_client.del(sessionKey);
     return null;
   }
 
-  return session;
+  return parsedSessionData;
 }
 
-async function deleteSession(sessionId: string): Promise<void> {
-  await redis_client.del(`session:${sessionId}`);
+export async function getSession(sessionId: string): Promise<UserSessionData | null> {
+  const sessionKey = `session:${sessionId}`;
+  const sessionData = await redis_client.hgetall(sessionKey);
+  if (!sessionData || Object.keys(sessionData).length === 0) {
+    return null;
+  }
+
+  const parsedSessionData = parseRedisSessionResult(sessionData);
+  if (!parsedSessionData) {
+    return null;
+  }
+
+  return parsedSessionData;
 }
 
-type RedisSession = {
-  id: string;
-  secretHash: Uint8Array;
-  createdAt: number;
-} | null;
-
-export interface Session {
-  id: string;
-  secretHash: Uint8Array;
-  createdAt: Date;
+export async function deleteSession(sessionId: string): Promise<void> {
+  const sessionKey = `session:${sessionId}`;
+  await redis_client.del(sessionKey);
 }
 
-interface SessionWithToken extends Session {
-  token: string;
+export function setSessionCookie(event: RequestEvent, sessionId: string, expiresAt: Date): void {
+  event.cookies.set("session", sessionId, {
+    httpOnly: true,
+    path: "/",
+//    secure: process.env.NODE_ENV === "production", need to check it
+    sameSite: "lax",
+    expires: expiresAt,
+  });
+}
+
+export function deleteSessionCookie(event: RequestEvent): void {
+  event.cookies.delete("session", { path: "/" });
 }

@@ -1,7 +1,7 @@
 export interface User {
-  id: number;
-  email: string;
-  googleId: string;
-  name: string;
-  picture: string;
+  googleUserId: string;
+  username: string;
+  accessToken: string;
+//  refreshToken: string;
+  expiresAt: Date;
 }

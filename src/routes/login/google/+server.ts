@@ -1,5 +1,5 @@
 import { generateState, generateCodeVerifier } from "arctic";
-import { google } from "$lib/auth/oauth";
+import { google, scopes } from "$lib/auth/oauth";
 
 import type { RequestEvent } from "@sveltejs/kit";
 
@@ -8,7 +8,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
   const codeVerifier = generateCodeVerifier();
 
   //TODO: Add youtube subscription scope
-  const url = google.createAuthorizationURL(state, codeVerifier, ["openid", "profile"]);
+  const url = google.createAuthorizationURL(state, codeVerifier, scopes);
 
   event.cookies.set("google_oauth_state", state, {
     path: "/",
