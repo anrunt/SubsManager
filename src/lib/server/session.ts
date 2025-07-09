@@ -1,12 +1,12 @@
-import type { RequestEvent } from '@sveltejs/kit';
-import { redis_client } from '../db/redis';
-import { z } from 'zod';
+import type { RequestEvent } from "@sveltejs/kit";
+import { redis_client } from "../db/redis";
+import { z } from "zod";
+import { sessionLifetime } from "../helper/helper";
 
 const sessionDataSchema = z.object({
   googleUserId: z.string(),
   username: z.string(),
-  accessToken: z.string(),
-  expiresAt: z.number()
+  accessToken: z.string()
 });
 
 export type UserSessionData = z.infer<typeof sessionDataSchema>;
@@ -15,31 +15,20 @@ export type UserSessionData = z.infer<typeof sessionDataSchema>;
 function parseRedisSessionResult(data: any): UserSessionData | null {
   try {
     return sessionDataSchema.parse(data);
-  } catch(error) {
+  } catch (error) {
     console.error("Invalid session data", error);
     return null;
   }
 }
 
-export async function createSession(sessionId: string, userData: UserSessionData): Promise<UserSessionData> {
+export async function createSession(sessionId: string, userData: UserSessionData): Promise<void> {
   const sessionKey = `session:${sessionId}`;
   await redis_client.hset(sessionKey, {
     googleUserId: userData.googleUserId,
     username: userData.username,
-    accessToken: userData.accessToken,
-    expiresAt: (Date.now() + 1000 * 60 * 60 * 24 * 30).toString() // 30 days
+    accessToken: userData.accessToken
   });
-  // Check if this is correct approach
-  await redis_client.expire(sessionKey, 60 * 60 * 24 * 30); // 30 days
-
-  const session: UserSessionData = {
-    googleUserId: userData.googleUserId,
-    username: userData.username,
-    accessToken: userData.accessToken,
-    expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
-  }
-
-  return session;
+  await redis_client.expire(sessionKey, sessionLifetime / 1000); // Converting to ms for redis
 }
 
 export async function validateSession(sessionId: string): Promise<UserSessionData | null> {
@@ -51,11 +40,6 @@ export async function validateSession(sessionId: string): Promise<UserSessionDat
 
   const parsedSessionData = parseRedisSessionResult(sessionData);
   if (!parsedSessionData) {
-    return null;
-  }
-
-  if (Date.now() > parsedSessionData.expiresAt) {
-    await redis_client.del(sessionKey);
     return null;
   }
 
@@ -86,9 +70,9 @@ export function setSessionCookie(event: RequestEvent, sessionId: string, expires
   event.cookies.set("session", sessionId, {
     httpOnly: true,
     path: "/",
-//    secure: process.env.NODE_ENV === "production", need to check it
+    //    secure: process.env.NODE_ENV === "production" <- its for https
     sameSite: "lax",
-    expires: expiresAt,
+    expires: expiresAt
   });
 }
 

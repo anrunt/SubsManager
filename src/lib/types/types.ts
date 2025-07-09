@@ -3,24 +3,24 @@ export type YouTubeSubscription = {
   etag: string;
   id: string;
   snippet: {
-      publishedAt: string;
-      title: string;
-      description: string;
-      resourceId: {
-          kind: string;
-          channelId: string;
-      };
+    publishedAt: string;
+    title: string;
+    description: string;
+    resourceId: {
+      kind: string;
       channelId: string;
-      thumbnails: {
-          default: {
-              url: string;
-          };
-          medium: {
-              url: string;
-          };
-          high: {
-              url: string;
-          };
+    };
+    channelId: string;
+    thumbnails: {
+      default: {
+        url: string;
       };
+      medium: {
+        url: string;
+      };
+      high: {
+        url: string;
+      };
+    };
   };
 };
