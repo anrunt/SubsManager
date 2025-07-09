@@ -7,7 +7,6 @@ export async function GET(event: RequestEvent): Promise<Response> {
   const state = generateState();
   const codeVerifier = generateCodeVerifier();
 
-  //TODO: Add youtube subscription scope
   const url = google.createAuthorizationURL(state, codeVerifier, scopes);
 
   event.cookies.set("google_oauth_state", state, {

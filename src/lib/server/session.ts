@@ -6,7 +6,6 @@ const sessionDataSchema = z.object({
   googleUserId: z.string(),
   username: z.string(),
   accessToken: z.string(),
-//  refreshToken: z.string(),
   expiresAt: z.number()
 });
 
@@ -28,7 +27,6 @@ export async function createSession(sessionId: string, userData: UserSessionData
     googleUserId: userData.googleUserId,
     username: userData.username,
     accessToken: userData.accessToken,
-//    refreshToken: userData.refreshToken,
     expiresAt: (Date.now() + 1000 * 60 * 60 * 24 * 30).toString() // 30 days
   });
   // Check if this is correct approach
@@ -38,7 +36,6 @@ export async function createSession(sessionId: string, userData: UserSessionData
     googleUserId: userData.googleUserId,
     username: userData.username,
     accessToken: userData.accessToken,
-//    refreshToken: userData.refreshToken,
     expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
   }
 

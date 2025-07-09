@@ -49,7 +49,6 @@ export async function GET(event: RequestEvent): Promise<Response> {
     googleUserId,
     username,
     accessToken: tokens.accessToken(),
-//    refreshToken: tokens.refreshToken(),
     expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30 // 30 days
   });
 
