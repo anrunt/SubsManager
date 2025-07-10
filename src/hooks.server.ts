@@ -23,6 +23,7 @@ export const auth: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
+// When user is logged in, redirect to dashboard always
 export const protectedRoutes: Handle = async ({ event, resolve }) => {
   if (event.url.pathname.startsWith("/dashboard")) {
     if (event.locals.user === null) {
