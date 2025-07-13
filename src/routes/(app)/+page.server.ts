@@ -12,6 +12,8 @@ export const actions: Actions = {
     if (sessionId) {
       await deleteSession(sessionId);
       deleteSessionCookie(event);
+    } else {
+      throw new Error("Session not found, please log in again");
     }
 
     redirect(302, "/");
