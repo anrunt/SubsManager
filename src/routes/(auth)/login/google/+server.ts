@@ -12,7 +12,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
   // Add prompt=select_account to force account chooser in all browsers
   url.searchParams.set("prompt", "select_account");
 
-  console.log("Ustawiam cookie google_oauth_state");
+  console.log("Setting google_oauth_state cookie");
   event.cookies.set("google_oauth_state", state, {
     path: "/",
     httpOnly: true,
@@ -20,7 +20,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
     sameSite: "lax"
   });
 
-  console.log("Ustawiam cookie google_code_verifier");
+  console.log("Setting google_code_verifier cookie");
   event.cookies.set("google_code_verifier", codeVerifier, {
     path: "/",
     httpOnly: true,

@@ -4,7 +4,7 @@ import type { OAuth2Tokens } from "arctic";
 import { google } from "$lib/auth/oauth";
 import { decodeIdToken } from "arctic";
 import { generateSecureRandomString, sessionLifetime } from "$lib/helper/helper";
-import { createSession, setSessionCookie, validateSession, deleteSessionCookie, deleteSession } from "$lib/server/session";
+import { createSession, setSessionCookie } from "$lib/server/session";
 
 interface GoogleClaims {
   sub: string;
@@ -12,29 +12,7 @@ interface GoogleClaims {
 }
 
 export async function GET(event: RequestEvent): Promise<Response> {
-  console.log("Wykonuje sie callback google");
-  
-  // First, check if user already has a valid session
-  const existingSessionId = event.cookies.get("session");
-  console.log("Existing session ID:", existingSessionId);
-  
-  if (existingSessionId) {
-    const existingSession = await validateSession(existingSessionId);
-    console.log("Existing session validation result:", existingSession);
-    
-    if (existingSession) {
-      console.log("User already has valid session, redirecting to dashboard");
-      return new Response(null, {
-        status: 302,
-        headers: {
-          location: "/dashboard"
-        }
-      });
-    } else {
-      console.log("Existing session is invalid, deleting cookie");
-      deleteSessionCookie(event);
-    }
-  }
+  console.log("Callback google");
   
   const code = event.url.searchParams.get("code");
   const state = event.url.searchParams.get("state");
@@ -51,7 +29,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
     return new Response(null, {
       status: 302,
       headers: {
-        location: "/login"
+        Location: "/"
       }
     });
   }
@@ -86,26 +64,6 @@ export async function GET(event: RequestEvent): Promise<Response> {
   
   console.log("Google user info - ID:", googleUserId, "Name:", username);
 
-  // Double-check for existing session with this Google user ID
-  // This is a redundant check but helps prevent race conditions
-  const finalExistingSessionId = event.cookies.get("session");
-  if (finalExistingSessionId) {
-    const finalExistingSession = await validateSession(finalExistingSessionId);
-    if (finalExistingSession && finalExistingSession.googleUserId === googleUserId) {
-      console.log("User already has session for this Google account, redirecting");
-      return new Response(null, {
-        status: 302,
-        headers: {
-          location: "/dashboard"
-        }
-      });
-    } else if (finalExistingSession && finalExistingSession.googleUserId !== googleUserId) {
-      console.log("User has session for different Google account, deleting old session");
-      deleteSessionCookie(event);
-      await deleteSession(finalExistingSessionId);
-    }
-  }
-
   const sessionId = generateSecureRandomString();
   console.log("Creating new session:", sessionId, "for Google user:", googleUserId);
   
@@ -115,13 +73,17 @@ export async function GET(event: RequestEvent): Promise<Response> {
     accessToken: tokens.accessToken(),
   });
 
-  setSessionCookie(event, sessionId, new Date(Date.now() + sessionLifetime));
+  console.log("Session created:", sessionId, "for Google user:", googleUserId);
 
-  console.log("Session created and cookie set, redirecting to dashboard");
+  console.log("Setting session cookie");
+  setSessionCookie(event, sessionId, new Date(Date.now() + sessionLifetime));
+  console.log("Session cookie set");
+
+  console.log("Session created and cookie set, redirecting to home");
   return new Response(null, {
     status: 302,
     headers: {
-      location: "/dashboard"
+      Location: "/"
     }
   });
 }
