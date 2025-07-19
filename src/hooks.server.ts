@@ -30,6 +30,12 @@ export const protectedRoutes: Handle = async ({ event, resolve }) => {
       throw redirect(307, "/login");
     }
   }
+
+  if (event.url.pathname.startsWith("/login")) {
+    if (event.locals.user !== null) {
+      throw redirect(307, "/");
+    }
+  }
   return resolve(event);
 };
 

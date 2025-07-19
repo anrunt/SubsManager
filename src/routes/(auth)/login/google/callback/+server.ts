@@ -13,6 +13,7 @@ interface GoogleClaims {
 
 export async function GET(event: RequestEvent): Promise<Response> {
   console.log("Callback google");
+  // Make a login lockup in redis, check if it exists, if it does, redirect to home
   
   const code = event.url.searchParams.get("code");
   const state = event.url.searchParams.get("state");

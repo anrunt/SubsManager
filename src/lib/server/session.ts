@@ -2,6 +2,7 @@ import type { RequestEvent } from "@sveltejs/kit";
 import { redis_client } from "../db/redis";
 import { z } from "zod";
 import { sessionLifetime } from "../helper/helper";
+import type { User } from "./user";
 
 const sessionDataSchema = z.object({
   googleUserId: z.string(),
@@ -29,6 +30,10 @@ export async function createSession(sessionId: string, userData: UserSessionData
     accessToken: userData.accessToken
   });
   await redis_client.expire(sessionKey, sessionLifetime / 1000); // Converting to ms for redis
+
+  const userGoogleIdKey = `user_google_id:${userData.googleUserId}`;
+  await redis_client.set(userGoogleIdKey, sessionId);
+  await redis_client.expire(userGoogleIdKey, sessionLifetime / 1000);
 }
 
 export async function validateSession(sessionId: string): Promise<UserSessionData | null> {
@@ -59,6 +64,20 @@ export async function getSession(sessionId: string): Promise<UserSessionData | n
   }
 
   return parsedSessionData;
+}
+
+export async function getUserByGoogleId(googleUserId: string): Promise<User | null> {
+  const sessionId: string | null = await redis_client.get(`user_google_id:${googleUserId}`);
+  if (!sessionId) {
+    return null;
+  }
+
+  const sessionData = await validateSession(sessionId);
+  if (!sessionData) {
+    return null;
+  }
+
+  return sessionData;
 }
 
 export async function deleteSession(sessionId: string): Promise<void> {
