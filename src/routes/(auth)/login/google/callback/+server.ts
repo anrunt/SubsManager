@@ -4,7 +4,7 @@ import type { OAuth2Tokens } from "arctic";
 import { google } from "$lib/auth/oauth";
 import { decodeIdToken } from "arctic";
 import { generateSecureRandomString, sessionLifetime } from "$lib/helper/helper";
-import { createSession, setSessionCookie } from "$lib/server/session";
+import { createSession, getOrCreateSessionForGoogleUser, setSessionCookie } from "$lib/server/session";
 
 interface GoogleClaims {
   sub: string;
@@ -13,7 +13,6 @@ interface GoogleClaims {
 
 export async function GET(event: RequestEvent): Promise<Response> {
   console.log("Callback google");
-  // Make a login lockup in redis, check if it exists, if it does, redirect to home
   
   const code = event.url.searchParams.get("code");
   const state = event.url.searchParams.get("state");
@@ -65,14 +64,22 @@ export async function GET(event: RequestEvent): Promise<Response> {
   
   console.log("Google user info - ID:", googleUserId, "Name:", username);
 
-  const sessionId = generateSecureRandomString();
-  console.log("Creating new session:", sessionId, "for Google user:", googleUserId);
+//  const sessionId = generateSecureRandomString();
+//  console.log("Creating new session:", sessionId, "for Google user:", googleUserId);
   
-  await createSession(sessionId, {
+  const sessionId = await getOrCreateSessionForGoogleUser({
     googleUserId,
     username,
     accessToken: tokens.accessToken(),
   });
+
+  // For now
+  if (sessionId === null) {
+    console.error("Failed to create session for Google user:", googleUserId);
+    return new Response(null, {
+      status: 500
+    });
+  }
 
   console.log("Session created:", sessionId, "for Google user:", googleUserId);
 

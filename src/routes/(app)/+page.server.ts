@@ -11,7 +11,7 @@ export const actions: Actions = {
     const sessionId = event.cookies.get("session");
     
     if (sessionId) {
-      await deleteSession(sessionId);
+      await deleteSession(sessionId, event.locals.user.googleUserId);
       deleteSessionCookie(event);
     } else {
       throw new Error("Session not found, please log in again");
