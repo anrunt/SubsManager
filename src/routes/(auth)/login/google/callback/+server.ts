@@ -28,7 +28,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
   }
 
   if (state !== storedState) {
-    error(400, 'Invalid OAuth state parameter');
+    error(400, 'Invalid OAuth state parameter, please try again');
   }
 
   event.cookies.delete("google_oauth_state", { path: "/" });
@@ -39,7 +39,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
   try {
     tokens = await google.validateAuthorizationCode(code, codeVerifier);
   } catch (e) {
-    error(400, 'Failed to validate authorization code');
+    error(400, 'Failed to validate authorization code, please try again');
   }
 
   const claims = decodeIdToken(tokens.idToken()) as GoogleClaims;
@@ -53,7 +53,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
   });
 
   if (sessionId === null) {
-    error(500, 'Failed to create user session');
+    error(500, 'Failed to create user session, please try again');
   }
 
   setSessionCookie(event, sessionId, new Date(Date.now() + sessionLifetime));
