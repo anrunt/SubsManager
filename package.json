@@ -39,6 +39,7 @@
     "arctic": "^3.7.0",
     "dotenv": "^16.6.1",
     "googleapis": "^149.0.0",
+    "lucide-svelte": "^0.525.0",
     "tailwindcss": "^4.1.7",
     "zod": "^3.25.75"
   }

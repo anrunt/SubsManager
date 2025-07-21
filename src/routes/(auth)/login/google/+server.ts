@@ -9,6 +9,9 @@ export async function GET(event: RequestEvent): Promise<Response> {
 
   const url = google.createAuthorizationURL(state, codeVerifier, scopes);
 
+  // Add prompt=select_account to force account chooser in all browsers
+  url.searchParams.set("prompt", "select_account");
+
   event.cookies.set("google_oauth_state", state, {
     path: "/",
     httpOnly: true,

@@ -1,7 +1,7 @@
 import type { RequestEvent } from "@sveltejs/kit";
 import { redis_client } from "../db/redis";
 import { z } from "zod";
-import { sessionLifetime } from "../helper/helper";
+import { generateSecureRandomString, sessionLifetime } from "../helper/helper";
 
 const sessionDataSchema = z.object({
   googleUserId: z.string(),
@@ -21,16 +21,6 @@ function parseRedisSessionResult(data: any): UserSessionData | null {
   }
 }
 
-export async function createSession(sessionId: string, userData: UserSessionData): Promise<void> {
-  const sessionKey = `session:${sessionId}`;
-  await redis_client.hset(sessionKey, {
-    googleUserId: userData.googleUserId,
-    username: userData.username,
-    accessToken: userData.accessToken
-  });
-  await redis_client.expire(sessionKey, sessionLifetime / 1000); // Converting to ms for redis
-}
-
 export async function validateSession(sessionId: string): Promise<UserSessionData | null> {
   const sessionKey = `session:${sessionId}`;
   const sessionData = await redis_client.hgetall(sessionKey);
@@ -44,6 +34,46 @@ export async function validateSession(sessionId: string): Promise<UserSessionDat
   }
 
   return parsedSessionData;
+}
+
+export async function getOrCreateSessionForGoogleUser(userData: UserSessionData): Promise<string | null> {
+  const userGoogleIdKey = `user_google_id:${userData.googleUserId}`;
+  let sessionId: string | null = await redis_client.get(userGoogleIdKey);
+
+  // Session exists, extend the session lifetime
+  if (sessionId) {
+    const sessionKey = `session:${sessionId}`;
+    const sessionData = await redis_client.hgetall(sessionKey);
+
+    if (!sessionData || Object.keys(sessionData).length === 0) {
+      await redis_client.del(userGoogleIdKey);
+    } else {
+      await redis_client.expire(userGoogleIdKey, sessionLifetime / 1000);
+      await redis_client.expire(sessionKey, sessionLifetime / 1000);
+      return sessionId;
+    }
+  }
+
+  sessionId = generateSecureRandomString();
+  const setResult = await redis_client.set(userGoogleIdKey, sessionId, {
+    ex: sessionLifetime / 1000,
+    nx: true
+  });
+
+  if (setResult === null) {
+    sessionId = await redis_client.get(userGoogleIdKey);
+    return sessionId;
+  }
+
+  const sessionKey = `session:${sessionId}`;
+  await redis_client.hset(sessionKey, {
+    googleUserId: userData.googleUserId,
+    username: userData.username,
+    accessToken: userData.accessToken
+  });
+  await redis_client.expire(sessionKey, sessionLifetime / 1000);
+
+  return sessionId;
 }
 
 export async function getSession(sessionId: string): Promise<UserSessionData | null> {
@@ -61,9 +91,11 @@ export async function getSession(sessionId: string): Promise<UserSessionData | n
   return parsedSessionData;
 }
 
-export async function deleteSession(sessionId: string): Promise<void> {
+export async function deleteSession(sessionId: string, googleUserId: string): Promise<void> {
   const sessionKey = `session:${sessionId}`;
+  const userGoogleIdKey = `user_google_id:${googleUserId}`;
   await redis_client.del(sessionKey);
+  await redis_client.del(userGoogleIdKey);
 }
 
 export function setSessionCookie(event: RequestEvent, sessionId: string, expiresAt: Date): void {
