@@ -17,6 +17,6 @@ export const actions: Actions = {
       throw new Error("Session not found, please log in again");
     }
 
-    redirect(302, "/");
+    throw redirect(302, "/");
   },
 };

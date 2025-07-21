@@ -42,9 +42,16 @@ export async function getOrCreateSessionForGoogleUser(userData: UserSessionData)
 
   // Session exists, extend the session lifetime
   if (sessionId) {
-    await redis_client.expire(userGoogleIdKey, sessionLifetime / 1000);
-    await redis_client.expire(`session:${sessionId}`, sessionLifetime / 1000);
-    return sessionId;
+    const sessionKey = `session:${sessionId}`;
+    const sessionData = await redis_client.hgetall(sessionKey);
+
+    if (!sessionData || Object.keys(sessionData).length === 0) {
+      await redis_client.del(userGoogleIdKey);
+    } else {
+      await redis_client.expire(userGoogleIdKey, sessionLifetime / 1000);
+      await redis_client.expire(sessionKey, sessionLifetime / 1000);
+      return sessionId;
+    }
   }
 
   sessionId = generateSecureRandomString();
