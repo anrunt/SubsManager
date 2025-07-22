@@ -31,7 +31,7 @@
     {:else}
       <a
         href="/login"
-        class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-white hover:bg-gray-300 text-black px-4 py-2 rounded-lg transition-colors"
+        class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-lg transition-colors"
       >
         Login
         <LogIn size={16} />
