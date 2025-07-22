@@ -4,7 +4,7 @@
   let { data } = $props();
 
   onMount(() => {
-    console.log(data);
+    console.log(data.subscriptions);
   });
 </script>
 

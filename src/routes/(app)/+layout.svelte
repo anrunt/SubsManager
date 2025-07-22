@@ -8,10 +8,14 @@
 
 <nav class="bg-black border-b border-gray-900 p-4">
   <div class="mx-0.5 flex items-center justify-between">
-    <div class="flex items-center">
-      <div class="text-white text-2xl font-bold hover:text-gray-300 transition-colors cursor-pointer">
+    <div class="flex items-center gap-4">
+      <a href="/" class="text-white text-2xl font-bold hover:text-gray-300 transition-colors cursor-pointer">
         SubsManager
-      </div>
+      </a>
+
+      <a href="/dashboard" class="text-white text-2xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
+        Dashboard
+      </a>
     </div>
 
     {#if data.user}
