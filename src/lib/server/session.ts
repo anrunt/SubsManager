@@ -1,15 +1,8 @@
 import type { RequestEvent } from "@sveltejs/kit";
 import { redis_client } from "../db/redis";
-import { z } from "zod";
 import { generateSecureRandomString, sessionLifetime } from "../helper/helper";
-
-const sessionDataSchema = z.object({
-  googleUserId: z.string(),
-  username: z.string(),
-  accessToken: z.string()
-});
-
-export type UserSessionData = z.infer<typeof sessionDataSchema>;
+import type { UserSessionData } from "$lib/types/types";
+import { sessionDataSchema } from "$lib/types/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseRedisSessionResult(data: any): UserSessionData | null {
