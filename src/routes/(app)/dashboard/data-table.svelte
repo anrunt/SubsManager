@@ -45,10 +45,22 @@
         <Table.Row data-state={row.getIsSelected() && "selected"}>
           {#each row.getVisibleCells() as cell (cell.id)}
             <Table.Cell>
-              <FlexRender
-                content={cell.column.columnDef.cell}
-                context={cell.getContext()}
-              />
+              {#if cell.column.id === "channelPicture"}
+                <img 
+                  src={cell.getValue() as string} 
+                  alt=ChannelPicture
+                  class="w-12 h-12 rounded-full object-cover" 
+                />
+              {:else if cell.column.id == "channelLink"}
+                <a href={cell.getValue() as string} target="_blank" class="text-blue-500 underline">
+                  Channel Link
+                </a>
+              {:else}
+                <FlexRender
+                  content={cell.column.columnDef.cell}
+                  context={cell.getContext()}
+                />
+              {/if}
             </Table.Cell>
           {/each}
         </Table.Row>
