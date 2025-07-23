@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import { google, type youtube_v3 } from 'googleapis';
-import type { YouTubeSubscription } from '$lib/types/types';
+import type { YouTubeSubscription, YoutubeSubs } from '$lib/types/types';
 import type { GaxiosResponse } from 'gaxios';
 
 export const load = async (event) => {
@@ -35,8 +35,15 @@ export const load = async (event) => {
 
     console.log('Total subscriptions fetched:', allSubscriptions.length);
 
+    const transformedSubscriptions: YoutubeSubs[] = allSubscriptions.map((subscription) => ({
+      channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
+      channelName: subscription.snippet.title,
+      channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
+      subscriptionId: subscription.id
+    }));
+
     return {
-      subscriptions: allSubscriptions
+      subscriptions: transformedSubscriptions
     };
   } catch (error) {
     console.error('Error fetching subscriptions:', error);
