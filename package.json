@@ -40,6 +40,7 @@
     "vite": "^6.2.5"
   },
   "dependencies": {
+    "@tanstack/table-core": "^8.21.3",
     "@upstash/redis": "^1.35.1",
     "arctic": "^3.7.0",
     "dotenv": "^16.6.1",

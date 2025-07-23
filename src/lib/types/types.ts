@@ -8,6 +8,13 @@ export const sessionDataSchema = z.object({
 
 export type UserSessionData = z.infer<typeof sessionDataSchema>;
 
+export type YoutubeSubs = {
+  channelPicture: string;
+  channelName: string;
+  channelLink: string;
+  subscriptionId: string;
+}
+
 export type YouTubeSubscription = {
   kind: string;
   etag: string;
