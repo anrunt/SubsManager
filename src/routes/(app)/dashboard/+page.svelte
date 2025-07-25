@@ -10,6 +10,4 @@
   });
 </script>
 
-<h1 class="text-white">Dashboard</h1>
-
 <DataTable data={data.subscriptions} {columns}/>
