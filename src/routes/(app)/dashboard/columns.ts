@@ -1,6 +1,5 @@
 import type { YoutubeSubs } from "$lib/types/types";
 import type { ColumnDef } from "@tanstack/table-core";
-
 export const columns: ColumnDef<YoutubeSubs>[] = [
   {
     accessorKey: "channelPicture",
@@ -8,10 +7,14 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
   },
   {
     accessorKey: "channelName",
-    header: "Name"
+    header: "Name",
   },
   {
     accessorKey: "channelLink",
     header: "Link"
   },
+  {
+    accessorKey: "subscriptionId",
+    header: "subscriptionID"
+  }
 ];

@@ -18,7 +18,13 @@
       return data;
     },
     columns,
-    getCoreRowModel: getCoreRowModel(),
+    initialState: {
+      columnVisibility: {
+        channelLink: false,
+        subscriptionId: false
+      }
+    },
+    getCoreRowModel: getCoreRowModel()
   })
 </script>
 
@@ -54,6 +60,10 @@
               {:else if cell.column.id == "channelLink"}
                 <a href={cell.getValue() as string} target="_blank" class="text-blue-500 underline">
                   Channel Link
+                </a>
+              {:else if cell.column.id == "channelName"}
+                <a href={cell.row.getValue("channelLink")} target="_blank" class="text-blue-500 underline text-[16px]">
+                  {cell.row.getValue("channelName")}
                 </a>
               {:else}
                 <FlexRender
