@@ -38,8 +38,8 @@ export async function GET(event: RequestEvent): Promise<Response> {
 
   try {
     tokens = await google.validateAuthorizationCode(code, codeVerifier);
-  } catch (e) {
-    error(400, `Failed to validate authorization code, please try again ${e}`);
+  } catch {
+    error(400, `Failed to validate authorization code, please try again`);
   }
 
   const claims = decodeIdToken(tokens.idToken()) as GoogleClaims;
