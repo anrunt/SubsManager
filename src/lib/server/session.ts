@@ -62,7 +62,8 @@ export async function getOrCreateSessionForGoogleUser(userData: UserSessionData)
   await redis_client.hset(sessionKey, {
     googleUserId: userData.googleUserId,
     username: userData.username,
-    accessToken: userData.accessToken
+    accessToken: userData.accessToken,
+    refreshToken: userData.refreshToken
   });
   await redis_client.expire(sessionKey, sessionLifetime / 1000);
 

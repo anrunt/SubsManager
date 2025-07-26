@@ -3,7 +3,8 @@ import { z } from "zod";
 export const sessionDataSchema = z.object({
   googleUserId: z.string(),
   username: z.string(),
-  accessToken: z.string()
+  accessToken: z.string(),
+  refreshToken: z.string()
 });
 
 export type UserSessionData = z.infer<typeof sessionDataSchema>;

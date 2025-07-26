@@ -9,8 +9,10 @@ export async function GET(event: RequestEvent): Promise<Response> {
 
   const url = google.createAuthorizationURL(state, codeVerifier, scopes);
 
-  // Add prompt=select_account to force account chooser in all browsers
-  url.searchParams.set("prompt", "select_account");
+  // Add prompt=select_account consent to force account chooser and consent screen
+  url.searchParams.set("prompt", "select_account consent");
+  // Add access_type=offline to get a refresh token
+  url.searchParams.set("access_type", "offline");
 
   event.cookies.set("google_oauth_state", state, {
     path: "/",

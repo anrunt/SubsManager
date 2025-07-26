@@ -50,6 +50,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
     googleUserId,
     username,
     accessToken: tokens.accessToken(),
+    refreshToken: tokens.refreshToken()
   });
 
   if (sessionId === null) {
