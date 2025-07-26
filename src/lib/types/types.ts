@@ -5,7 +5,7 @@ export const sessionDataSchema = z.object({
   username: z.string(),
   accessToken: z.string(),
   refreshToken: z.string(),
-  accessTokenExpiresAt: z.number() // Unix timestamp
+  accessTokenExpiresAt: z.number()
 });
 
 export type UserSessionData = z.infer<typeof sessionDataSchema>;

@@ -7,7 +7,6 @@ import { sessionDataSchema } from "$lib/types/types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseRedisSessionResult(data: any): UserSessionData | null {
   try {
-    // Convert accessTokenExpiresAt from string to number since Redis stores everything as strings
     const parsedData = {
       ...data,
       accessTokenExpiresAt: parseInt(data.accessTokenExpiresAt) // check if necessary
@@ -91,9 +90,6 @@ export async function getSession(sessionId: string): Promise<UserSessionData | n
   return parsedSessionData;
 }
 
-/**
- * Updates session with new token information
- */
 export async function updateSessionTokens(
   sessionId: string, 
   tokens: { accessToken: string; refreshToken: string; accessTokenExpiresAt: number }

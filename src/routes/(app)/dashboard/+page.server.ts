@@ -13,7 +13,6 @@ export const load = async (event) => {
   let { accessToken, refreshToken, accessTokenExpiresAt } = event.locals.user;
   const sessionId = event.cookies.get("session")!;
 
-  // Proactively refresh token if expired or expiring soon
   if (isTokenExpired(accessTokenExpiresAt)) {
     try {
       const newTokens = await refreshAccessTokenWithExpiry(refreshToken);
@@ -21,7 +20,6 @@ export const load = async (event) => {
       refreshToken = newTokens.refreshToken;
       accessTokenExpiresAt = newTokens.expiresAt;
       
-      // Update session with new tokens
       await updateSessionTokens(sessionId, {
         accessToken,
         refreshToken, 

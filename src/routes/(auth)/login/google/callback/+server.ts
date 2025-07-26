@@ -46,7 +46,6 @@ export async function GET(event: RequestEvent): Promise<Response> {
   const googleUserId = claims.sub;
   const username = claims.name;
   
-  // Google access tokens typically expire in 1 hour
   const accessTokenExpiresAt = Math.floor(Date.now() / 1000) + 3600;
   
   const sessionId = await getOrCreateSessionForGoogleUser({
