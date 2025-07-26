@@ -1,6 +1,8 @@
 import { redirect } from "@sveltejs/kit";
 import { google, type youtube_v3 } from 'googleapis';
+import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/auth/oauth";
 import type { YouTubeSubscription, YoutubeSubs } from '$lib/types/types';
+import { updateSessionTokens } from "$lib/server/session";
 import type { GaxiosResponse } from 'gaxios';
 
 export const load = async (event) => {
@@ -8,7 +10,30 @@ export const load = async (event) => {
     throw redirect(302, "/login");
   }
 
-  const accessToken = event.locals.user.accessToken;
+  let { accessToken, refreshToken, accessTokenExpiresAt } = event.locals.user;
+  const sessionId = event.cookies.get("session")!;
+
+  // Proactively refresh token if expired or expiring soon
+  if (isTokenExpired(accessTokenExpiresAt)) {
+    try {
+      const newTokens = await refreshAccessTokenWithExpiry(refreshToken);
+      accessToken = newTokens.accessToken;
+      refreshToken = newTokens.refreshToken;
+      accessTokenExpiresAt = newTokens.expiresAt;
+      
+      // Update session with new tokens
+      await updateSessionTokens(sessionId, {
+        accessToken,
+        refreshToken, 
+        accessTokenExpiresAt
+      });
+      
+      console.log("Access token refreshed proactively");
+    } catch (error) {
+      console.error("Failed to refresh access token:", error);
+      throw redirect(302, "/login");
+    }
+  }
 
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({ access_token: accessToken });
@@ -46,7 +71,7 @@ export const load = async (event) => {
       subscriptions: transformedSubscriptions
     };
   } catch (error) {
-    console.error('Error fetching subscriptions:', error);
+    console.error("API call failed:", error);
     return {
       subscriptions: []
     };

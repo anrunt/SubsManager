@@ -7,7 +7,12 @@ import { sessionDataSchema } from "$lib/types/types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseRedisSessionResult(data: any): UserSessionData | null {
   try {
-    return sessionDataSchema.parse(data);
+    // Convert accessTokenExpiresAt from string to number since Redis stores everything as strings
+    const parsedData = {
+      ...data,
+      accessTokenExpiresAt: parseInt(data.accessTokenExpiresAt) // check if necessary
+    };
+    return sessionDataSchema.parse(parsedData);
   } catch (error) {
     console.error("Invalid session data", error);
     return null;
@@ -63,7 +68,8 @@ export async function getOrCreateSessionForGoogleUser(userData: UserSessionData)
     googleUserId: userData.googleUserId,
     username: userData.username,
     accessToken: userData.accessToken,
-    refreshToken: userData.refreshToken
+    refreshToken: userData.refreshToken,
+    accessTokenExpiresAt: userData.accessTokenExpiresAt.toString()
   });
   await redis_client.expire(sessionKey, sessionLifetime / 1000);
 
@@ -83,6 +89,21 @@ export async function getSession(sessionId: string): Promise<UserSessionData | n
   }
 
   return parsedSessionData;
+}
+
+/**
+ * Updates session with new token information
+ */
+export async function updateSessionTokens(
+  sessionId: string, 
+  tokens: { accessToken: string; refreshToken: string; accessTokenExpiresAt: number }
+): Promise<void> {
+  const sessionKey = `session:${sessionId}`;
+  await redis_client.hset(sessionKey, {
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    accessTokenExpiresAt: tokens.accessTokenExpiresAt.toString()
+  });
 }
 
 export async function deleteSession(sessionId: string, googleUserId: string): Promise<void> {

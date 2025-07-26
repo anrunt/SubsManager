@@ -4,7 +4,8 @@ export const sessionDataSchema = z.object({
   googleUserId: z.string(),
   username: z.string(),
   accessToken: z.string(),
-  refreshToken: z.string()
+  refreshToken: z.string(),
+  accessTokenExpiresAt: z.number() // Unix timestamp
 });
 
 export type UserSessionData = z.infer<typeof sessionDataSchema>;
