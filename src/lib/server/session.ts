@@ -7,11 +7,7 @@ import { sessionDataSchema } from "$lib/types/types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseRedisSessionResult(data: any): UserSessionData | null {
   try {
-    const parsedData = {
-      ...data,
-      accessTokenExpiresAt: parseInt(data.accessTokenExpiresAt) // check if necessary
-    };
-    return sessionDataSchema.parse(parsedData);
+    return sessionDataSchema.parse(data);
   } catch (error) {
     console.error("Invalid session data", error);
     return null;
