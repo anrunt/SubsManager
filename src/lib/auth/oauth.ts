@@ -10,3 +10,20 @@ export const google = new Google(
 );
 
 export const scopes = ["openid", "profile", "https://www.googleapis.com/auth/youtube.readonly"];
+
+export function isTokenExpired(expiresAt: number): boolean {
+  const now = Math.floor(Date.now() / 1000);
+  const bufferTime = 5 * 60; // 5 minutes buffer
+  return now >= (expiresAt - bufferTime);
+}
+
+export async function refreshAccessTokenWithExpiry(refreshToken: string) {
+  const tokens = await google.refreshAccessToken(refreshToken);
+  const expiresAt = tokens.accessTokenExpiresAt().getTime() / 1000;
+  
+  return {
+    accessToken: tokens.accessToken(),
+    refreshToken: tokens.refreshToken() || refreshToken,
+    expiresAt
+  };
+}

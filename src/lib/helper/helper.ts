@@ -11,5 +11,5 @@ export function generateSecureRandomString(): string {
   return id;
 }
 
-export const sessionLifetime = 1000 * 60 * 60 * 24; // 1 day
+export const sessionLifetime = 1000 * 60 * 60 * 24 * 30; // 30 days
 //export const sessionLifetime = 1000 * 60; // 60 seconds for testing

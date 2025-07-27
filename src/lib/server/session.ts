@@ -62,7 +62,9 @@ export async function getOrCreateSessionForGoogleUser(userData: UserSessionData)
   await redis_client.hset(sessionKey, {
     googleUserId: userData.googleUserId,
     username: userData.username,
-    accessToken: userData.accessToken
+    accessToken: userData.accessToken,
+    refreshToken: userData.refreshToken,
+    accessTokenExpiresAt: userData.accessTokenExpiresAt.toString()
   });
   await redis_client.expire(sessionKey, sessionLifetime / 1000);
 
@@ -82,6 +84,18 @@ export async function getSession(sessionId: string): Promise<UserSessionData | n
   }
 
   return parsedSessionData;
+}
+
+export async function updateSessionTokens(
+  sessionId: string, 
+  tokens: { accessToken: string; refreshToken: string; accessTokenExpiresAt: number }
+): Promise<void> {
+  const sessionKey = `session:${sessionId}`;
+  await redis_client.hset(sessionKey, {
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    accessTokenExpiresAt: tokens.accessTokenExpiresAt.toString()
+  });
 }
 
 export async function deleteSession(sessionId: string, googleUserId: string): Promise<void> {
