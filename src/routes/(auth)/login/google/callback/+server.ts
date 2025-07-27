@@ -46,7 +46,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
   const googleUserId = claims.sub;
   const username = claims.name;
   
-  const accessTokenExpiresAt = Math.floor(Date.now() / 1000) + 3600;
+  const accessTokenExpiresAt = tokens.accessTokenExpiresAt().getTime() / 1000;
   
   const sessionId = await getOrCreateSessionForGoogleUser({
     googleUserId,

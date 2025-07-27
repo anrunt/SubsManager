@@ -19,11 +19,11 @@ export function isTokenExpired(expiresAt: number): boolean {
 
 export async function refreshAccessTokenWithExpiry(refreshToken: string) {
   const tokens = await google.refreshAccessToken(refreshToken);
-  const expiresAt = Math.floor(Date.now() / 1000) + 3600;
+  const expiresAt = tokens.accessTokenExpiresAt().getTime() / 1000;
   
   return {
     accessToken: tokens.accessToken(),
-    refreshToken: refreshToken, // check if tokens.refreshToken() is needed
+    refreshToken: tokens.refreshToken() || refreshToken,
     expiresAt
   };
 }
