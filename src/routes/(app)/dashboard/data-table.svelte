@@ -61,11 +61,6 @@
                 <a href={cell.row.getValue("channelLink")} target="_blank" class="text-blue-500 underline text-[16px]">
                   {cell.row.getValue("channelName")}
                 </a>
-              {:else}
-                <FlexRender
-                  content={cell.column.columnDef.cell}
-                  context={cell.getContext()}
-                />
               {/if}
             </Table.Cell>
           {/each}
