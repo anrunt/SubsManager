@@ -1,5 +1,5 @@
 <script lang="ts" generics="TData, TValue">
-  import { type ColumnDef, getCoreRowModel } from "@tanstack/table-core";
+  import { type ColumnDef, type RowSelectionState, getCoreRowModel } from "@tanstack/table-core";
   import {
     createSvelteTable,
     FlexRender,
@@ -13,6 +13,8 @@
 
   let { data, columns }: DataTableProps<TData, TValue> = $props()
 
+  let rowSelection = $state<RowSelectionState>({});
+
   const table = createSvelteTable({
     get data() {
       return data;
@@ -24,7 +26,19 @@
         subscriptionId: false
       }
     },
-    getCoreRowModel: getCoreRowModel()
+    getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: (updater) => {
+      if (typeof updater === "function") {
+        rowSelection = updater(rowSelection);
+      } else {
+        rowSelection = updater;
+      }
+    },
+    state: {
+      get rowSelection() {
+        return rowSelection;
+      }
+    }
   })
 </script>
 
@@ -61,6 +75,11 @@
                 <a href={cell.row.getValue("channelLink")} target="_blank" class="text-blue-500 underline text-[16px]">
                   {cell.row.getValue("channelName")}
                 </a>
+              {:else}
+                <FlexRender
+                  content={cell.column.columnDef.cell}
+                  context={cell.getContext()}
+                />
               {/if}
             </Table.Cell>
           {/each}
