@@ -1,5 +1,12 @@
 <script lang="ts" generics="TData, TValue">
-  import { type ColumnDef, type RowSelectionState, getCoreRowModel } from "@tanstack/table-core";
+  import { 
+    type ColumnDef,
+    type PaginationState,
+    type RowSelectionState,
+    getCoreRowModel,
+    getPaginationRowModel,
+    getSortedRowModel
+  } from "@tanstack/table-core";
   import {
     createSvelteTable,
     FlexRender,
@@ -14,6 +21,10 @@
   let { data, columns }: DataTableProps<TData, TValue> = $props()
 
   let rowSelection = $state<RowSelectionState>({});
+  let pagination = $state<PaginationState>({
+    pageIndex: 0,
+    pageSize: 11
+  });
 
   const table = createSvelteTable({
     get data() {
@@ -27,6 +38,14 @@
       }
     },
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onPaginationChange: (updater) => {
+      if (typeof updater === "function") {
+        pagination = updater(pagination);
+      } else {
+        pagination = updater;
+      }
+    },
     onRowSelectionChange: (updater) => {
       if (typeof updater === "function") {
         rowSelection = updater(rowSelection);
@@ -35,6 +54,9 @@
       }
     },
     state: {
+      get pagination() {
+        return pagination;
+      },
       get rowSelection() {
         return rowSelection;
       }
@@ -42,55 +64,78 @@
   })
 </script>
 
-<div class="rounded-md border">
-  <Table.Root>
-    <Table.Header>
-      {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-        <Table.Row>
-          {#each headerGroup.headers as header (header.id)}
-            <Table.Head colspan={header.colSpan}>
-              {#if !header.isPlaceholder}
-                <FlexRender
-                  content={header.column.columnDef.header}
-                  context={header.getContext()}
-                />
-              {/if}
-            </Table.Head>
-          {/each}
-        </Table.Row>
-      {/each}
-    </Table.Header>
-    <Table.Body>
-      {#each table.getRowModel().rows as row (row.id)}
-        <Table.Row data-state={row.getIsSelected() && "selected"}>
-          {#each row.getVisibleCells() as cell (cell.id)}
-            <Table.Cell>
-              {#if cell.column.id === "channelPicture"}
-                <img 
-                  src={cell.getValue() as string} 
-                  alt=ChannelPicture
-                  class="w-12 h-12 rounded-full object-cover" 
-                />
-              {:else if cell.column.id == "channelName"}
-                <a href={cell.row.getValue("channelLink")} target="_blank" class="text-blue-500 underline text-[16px]">
-                  {cell.row.getValue("channelName")}
-                </a>
-              {:else}
-                <FlexRender
-                  content={cell.column.columnDef.cell}
-                  context={cell.getContext()}
-                />
-              {/if}
+<div>
+  <div class="rounded-md border">
+    <Table.Root style="table-layout: fixed; width: 100%;">
+      <Table.Header>
+        {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+          <Table.Row>
+            {#each headerGroup.headers as header (header.id)}
+              <Table.Head 
+                colspan={header.colSpan}
+                style="width: {header.getSize()}px; min-width: {header.getSize()}px; max-width: {header.getSize()}px;"
+              >
+                {#if !header.isPlaceholder}
+                  <FlexRender
+                    content={header.column.columnDef.header}
+                    context={header.getContext()}
+                  />
+                {/if}
+              </Table.Head>
+            {/each}
+          </Table.Row>
+        {/each}
+      </Table.Header>
+      <Table.Body>
+        {#each table.getRowModel().rows as row (row.id)}
+          <Table.Row data-state={row.getIsSelected() && "selected"}>
+            {#each row.getVisibleCells() as cell (cell.id)}
+              <Table.Cell 
+                style="width: {cell.column.getSize()}px; min-width: {cell.column.getSize()}px; max-width: {cell.column.getSize()}px;"
+              >
+                {#if cell.column.id === "channelPicture"}
+                  <img 
+                    src={cell.getValue() as string} 
+                    alt=ChannelPicture
+                    class="w-12 h-12 rounded-full object-cover" 
+                  />
+                {:else if cell.column.id == "channelName"}
+                  <a href={cell.row.getValue("channelLink")} target="_blank" class="text-blue-500 underline text-[16px]">
+                    {cell.row.getValue("channelName")}
+                  </a>
+                {:else}
+                  <FlexRender
+                    content={cell.column.columnDef.cell}
+                    context={cell.getContext()}
+                  />
+                {/if}
+              </Table.Cell>
+            {/each}
+          </Table.Row>
+        {:else}
+          <Table.Row>
+            <Table.Cell colspan={columns.length} class="h-24 text-center">
+              No results.
             </Table.Cell>
-          {/each}
-        </Table.Row>
-      {:else}
-        <Table.Row>
-          <Table.Cell colspan={columns.length} class="h-24 text-center">
-            No results.
-          </Table.Cell>
-        </Table.Row>
-      {/each}
-    </Table.Body>
-  </Table.Root>
+          </Table.Row>
+        {/each}
+      </Table.Body>
+    </Table.Root>
+  </div>
+  <div class="flex items-center mr-4 justify-end space-x-2 py-4">
+    <button
+      class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      onclick={() => table.previousPage()}
+      disabled={!table.getCanPreviousPage()}
+    >
+      Previous
+    </button>
+    <button
+      class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      onclick={() => table.nextPage()}
+      disabled={!table.getCanNextPage()}
+    >
+      Next
+    </button>
+  </div>
 </div>

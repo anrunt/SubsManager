@@ -8,9 +8,11 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
     id: "select",
     header: ({ table }) => 
       renderComponent(Checkbox, {
-        checked: table.getIsAllRowsSelected(),
-        indeterminate: !table.getIsAllRowsSelected(),
-        onCheckedChange: (value) => table.toggleAllRowsSelected(!!value),
+        checked: table.getIsAllPageRowsSelected(),
+        indeterminate:
+          table.getIsSomePageRowsSelected() &&
+          !table.getIsAllPageRowsSelected(),
+        onCheckedChange: (value) => table.toggleAllPageRowsSelected(!!value),
         "aria-label": "Select all",
       }),
     cell: ({ row }) => 
@@ -21,21 +23,30 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
       }),
     enableSorting: false,
     enableHiding: false,
+    size: 20,
+    minSize: 20,
+    maxSize: 20,
   },
   {
     accessorKey: "channelPicture",
-    header: "Picture"
+    header: "Picture",
+    size: 80,
+    minSize: 80,
+    maxSize: 80,
   },
   {
     accessorKey: "channelName",
     header: "Name",
+    size: 300,
+    minSize: 200,
+    maxSize: 400,
   },
   {
     accessorKey: "channelLink",
-    header: "Link"
+    header: "Link",
   },
   {
     accessorKey: "subscriptionId",
-    header: "subscriptionID"
+    header: "subscriptionID",
   },
 ];
