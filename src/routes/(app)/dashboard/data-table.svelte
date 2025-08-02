@@ -5,8 +5,8 @@
     type RowSelectionState,
     getCoreRowModel,
     getPaginationRowModel,
-    getSortedRowModel
   } from "@tanstack/table-core";
+  import type { YoutubeSubs } from "$lib/types/types";
   import {
     createSvelteTable,
     FlexRender,
@@ -59,6 +59,11 @@
       }
     }
   })
+
+  let selectedRows = $derived(table.getSelectedRowModel().rows.map((row) => row.original as unknown as YoutubeSubs));
+  let selectedRowsSubscriptionIds = $derived(selectedRows.map((row) => row.subscriptionId));
+  
+  $inspect(selectedRowsSubscriptionIds);
 </script>
 
 <div>
