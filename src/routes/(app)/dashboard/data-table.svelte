@@ -123,15 +123,18 @@
     </Table.Root>
   </div>
   <div class="flex items-center mr-4 justify-end space-x-2 py-4">
+    <div class="flex items-center px-2 text-md">
+      Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+    </div>
     <button
-      class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       onclick={() => table.previousPage()}
       disabled={!table.getCanPreviousPage()}
     >
       Previous
     </button>
     <button
-      class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       onclick={() => table.nextPage()}
       disabled={!table.getCanNextPage()}
     >
