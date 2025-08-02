@@ -29,7 +29,7 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
   },
   {
     accessorKey: "channelPicture",
-    header: "Picture",
+    header: "Profile Picture",
     size: 80,
     minSize: 80,
     maxSize: 80,

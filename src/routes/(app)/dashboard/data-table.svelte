@@ -21,10 +21,7 @@
   let { data, columns }: DataTableProps<TData, TValue> = $props()
 
   let rowSelection = $state<RowSelectionState>({});
-  let pagination = $state<PaginationState>({
-    pageIndex: 0,
-    pageSize: 11
-  });
+  let pagination = $state<PaginationState>({pageIndex: 0, pageSize: 11});
 
   const table = createSvelteTable({
     get data() {
@@ -66,7 +63,7 @@
 
 <div>
   <div class="rounded-md border">
-    <Table.Root style="table-layout: fixed; width: 100%;">
+    <Table.Root class="table-fixed w-full">
       <Table.Header>
         {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
           <Table.Row>
@@ -74,6 +71,7 @@
               <Table.Head 
                 colspan={header.colSpan}
                 style="width: {header.getSize()}px; min-width: {header.getSize()}px; max-width: {header.getSize()}px;"
+                class="font-semibold text-[16px]"
               >
                 {#if !header.isPlaceholder}
                   <FlexRender
@@ -100,7 +98,7 @@
                     class="w-12 h-12 rounded-full object-cover" 
                   />
                 {:else if cell.column.id == "channelName"}
-                  <a href={cell.row.getValue("channelLink")} target="_blank" class="text-blue-500 underline text-[16px]">
+                  <a href={cell.row.getValue("channelLink")} target="_blank" class="text-white text-[16px] hover:text-gray-300 hover:underline">
                     {cell.row.getValue("channelName")}
                   </a>
                 {:else}
