@@ -12,6 +12,7 @@
     FlexRender,
   } from "$lib/components/ui/data-table/index"
   import * as Table from "$lib/components/ui/table/index"
+  import { setSubscriptions } from "./subscriptions.svelte";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -62,6 +63,10 @@
 
   let selectedRows = $derived(table.getSelectedRowModel().rows.map((row) => row.original as unknown as YoutubeSubs));
   let selectedRowsSubscriptionIds = $derived(selectedRows.map((row) => row.subscriptionId));
+
+  $effect(() => {
+    setSubscriptions(selectedRowsSubscriptionIds);
+  })
   
   $inspect(selectedRowsSubscriptionIds);
 </script>
