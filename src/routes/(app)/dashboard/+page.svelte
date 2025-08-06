@@ -13,5 +13,7 @@
   let selectedSubscriptions = $derived(getSubscriptions());
 </script>
 
-<p>Selected Subscriptions: {selectedSubscriptions.length}</p>
-<DataTable data={data.subscriptions} {columns}/>
+<div class="flex flex-col gap-4">
+  <p>Selected Subscriptions: {selectedSubscriptions.length}</p>
+  <DataTable data={data.subscriptions} {columns}/>
+</div>
