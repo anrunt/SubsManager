@@ -1,9 +1,10 @@
-import { redirect } from "@sveltejs/kit";
+import { redirect, type Actions } from "@sveltejs/kit";
 import { google, type youtube_v3 } from 'googleapis';
 import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/auth/oauth";
 import type { YouTubeSubscription, YoutubeSubs } from '$lib/types/types';
 import { updateSessionTokens } from "$lib/server/session";
 import type { GaxiosResponse } from 'gaxios';
+import { z } from 'zod';
 
 export const load = async (event) => {
   if (event.locals.user === null) {
@@ -75,3 +76,35 @@ export const load = async (event) => {
     };
   }
 };
+
+export const actions: Actions = {
+  deleteSubscriptions: async (event) => {
+    if (event.locals.user === null) {
+      throw redirect(302, "/login");
+    }
+
+    // handle expired accessToken
+    const accessToken = event.locals.user.accessToken;
+
+    const data = await event.request.formData();
+    const selectedSubscriptionsRaw = data.get('selectedSubscriptions');
+    
+    const subscriptionIdsSchema = z.string().transform((str) => {
+      return str.split(',').map(id => id.trim()).filter(id => id);
+    });
+    
+    let selectedSubscriptions: string[] = [];
+    
+    try {
+      selectedSubscriptions = subscriptionIdsSchema.parse(selectedSubscriptionsRaw);
+    } catch (error) {
+      console.error("Invalid selectedSubscriptions format:", error);
+      selectedSubscriptions = [];
+    }
+
+    console.log("Selected subs:", selectedSubscriptions);
+
+//    const oauth2Client = new google.auth.OAuth2();
+//    oauth2Client.setCredentials({ access_token: accessToken });
+  }
+}
