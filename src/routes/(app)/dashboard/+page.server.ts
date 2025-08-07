@@ -83,8 +83,28 @@ export const actions: Actions = {
       throw redirect(302, "/login");
     }
 
-    // handle expired accessToken
-    const accessToken = event.locals.user.accessToken;
+    let { accessToken, refreshToken, accessTokenExpiresAt } = event.locals.user;
+    const sessionId = event.cookies.get("session")!;
+
+    if (isTokenExpired(accessTokenExpiresAt)) {
+      try {
+        const newTokens = await refreshAccessTokenWithExpiry(refreshToken);
+        accessToken = newTokens.accessToken;
+        refreshToken = newTokens.refreshToken;
+        accessTokenExpiresAt = newTokens.expiresAt;
+        
+        await updateSessionTokens(sessionId, {
+          accessToken,
+          refreshToken, 
+          accessTokenExpiresAt
+        });
+        
+        console.log("Access token refreshed in form action");
+      } catch (error) {
+        console.error("Failed to refresh access token in form action:", error);
+        throw redirect(302, "/login");
+      }
+    }
 
     const data = await event.request.formData();
     const selectedSubscriptionsRaw = data.get('selectedSubscriptions');
@@ -104,7 +124,7 @@ export const actions: Actions = {
 
     console.log("Selected subs:", selectedSubscriptions);
 
-//    const oauth2Client = new google.auth.OAuth2();
-//    oauth2Client.setCredentials({ access_token: accessToken });
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: accessToken });
   }
 }
