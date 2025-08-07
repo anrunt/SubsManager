@@ -69,6 +69,19 @@
   })
 
   $inspect(selectedRowsSubscriptionIds);
+
+
+  function handlePrevPage(event: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    table.previousPage();
+  }
+
+  function handleNextPage(event: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    table.nextPage();
+  }
 </script>
 
 <div>
@@ -135,15 +148,17 @@
       Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
     </div>
     <button
+      type="button"
       class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-      onclick={() => table.previousPage()}
+      onclick={handlePrevPage}
       disabled={!table.getCanPreviousPage()}
     >
       Previous
     </button>
     <button
+      type="button"
       class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-      onclick={() => table.nextPage()}
+      onclick={handleNextPage}
       disabled={!table.getCanNextPage()}
     >
       Next

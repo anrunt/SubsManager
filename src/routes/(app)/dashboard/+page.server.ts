@@ -16,6 +16,7 @@ export const load = async (event) => {
 
   if (isTokenExpired(accessTokenExpiresAt)) {
     try {
+      console.log("Refreshing acces token inside load function")
       const newTokens = await refreshAccessTokenWithExpiry(refreshToken);
       accessToken = newTokens.accessToken;
       refreshToken = newTokens.refreshToken;
@@ -88,6 +89,7 @@ export const actions: Actions = {
 
     if (isTokenExpired(accessTokenExpiresAt)) {
       try {
+        console.log("Refreshing acces token inside deleteSubscriptions action")
         const newTokens = await refreshAccessTokenWithExpiry(refreshToken);
         accessToken = newTokens.accessToken;
         refreshToken = newTokens.refreshToken;
