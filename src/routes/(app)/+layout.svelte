@@ -22,7 +22,7 @@
       <form method="POST" action="/?/logout" use:enhance>
         <button
           type="submit"
-          class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-red-500 hover:bg-red-800 text-black px-4 py-2 rounded-md transition-colors cursor-pointer"
+          class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#dc2626] hover:bg-[#b91c1c] text-white px-4 py-2 rounded-md transition-colors cursor-pointer"
         >
           Logout
           <LogOut size={16} />
