@@ -67,7 +67,7 @@
   $effect(() => {
     setSubscriptions(selectedRowsSubscriptionIds);
   })
-  
+
   $inspect(selectedRowsSubscriptionIds);
 </script>
 
