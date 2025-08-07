@@ -3,7 +3,7 @@
   import DataTable from "./data-table.svelte";
   import { columns } from "./columns";
   import { getSubscriptions } from "./subscriptions.svelte";
-    import { enhance } from "$app/forms";
+  import { enhance } from "$app/forms";
 
   let { data } = $props();
 
