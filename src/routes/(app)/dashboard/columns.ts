@@ -14,7 +14,10 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
         indeterminate:
           table.getIsSomePageRowsSelected() &&
           !table.getIsAllPageRowsSelected(),
-        disabled: !table.getIsAllPageRowsSelected() && table.getSelectedRowModel().rows.length >= MAX_SELECTION && !table.getIsSomePageRowsSelected(),
+        disabled: 
+          !table.getIsAllPageRowsSelected() && 
+          table.getSelectedRowModel().rows.length >= MAX_SELECTION && 
+          !table.getIsSomePageRowsSelected(),
         onCheckedChange: (value) => {
           const shouldSelect = !!value;
           const selectedTotal = table.getSelectedRowModel().rows.length;
@@ -28,10 +31,9 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
             };
             const toSelect = unselectedOnPage.slice(0, remaining);
             toSelect.forEach((row) => row.toggleSelected(true));
-            return;
+          } else {
+            table.toggleAllPageRowsSelected(false);
           }
-          // This works only when shouldSelect == false
-          table.toggleAllPageRowsSelected(false);
         },
         "aria-label": "Select all",
       }),
