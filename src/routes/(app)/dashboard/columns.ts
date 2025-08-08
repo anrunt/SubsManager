@@ -3,6 +3,8 @@ import type { ColumnDef } from "@tanstack/table-core";
 import { renderComponent } from "$lib/components/ui/data-table/index";
 import { Checkbox } from "$lib/components/ui/checkbox/index";
 
+const MAX_SELECTION = 12;
+
 export const columns: ColumnDef<YoutubeSubs>[] = [
   {
     id: "select",
@@ -12,23 +14,24 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
         indeterminate:
           table.getIsSomePageRowsSelected() &&
           !table.getIsAllPageRowsSelected(),
-        disabled: !table.getIsAllPageRowsSelected() && table.getSelectedRowModel().rows.length >= 12 && !table.getIsSomePageRowsSelected(),
+        disabled: !table.getIsAllPageRowsSelected() && table.getSelectedRowModel().rows.length >= MAX_SELECTION && !table.getIsSomePageRowsSelected(),
         onCheckedChange: (value) => {
-          const selectedRows = table.getSelectedRowModel().rows.length;
-          const availableRowsNumber = 12 - selectedRows; // 12 - 11 = 1
+          const shouldSelect = !!value;
+          const selectedTotal = table.getSelectedRowModel().rows.length;
+          const pageRows = table.getRowModel().rows;
+          const unselectedOnPage = pageRows.filter((row) => !row.getIsSelected());
+          const remaining = Math.max(0, MAX_SELECTION - selectedTotal);
 
-          if (availableRowsNumber >= 11) {
-            table.toggleAllPageRowsSelected(!!value);
-          } else if (availableRowsNumber > 0 && availableRowsNumber < 11 && !table.getIsAllPageRowsSelected()) {
-            const availableRows = table.getRowModel().rows.slice(0, availableRowsNumber);
-            availableRows.forEach(row => row.toggleSelected(!!value));
-          } else if (availableRowsNumber > 0 && availableRowsNumber < 11 && table.getIsAllPageRowsSelected()) {
-            table.toggleAllPageRowsSelected(!!value);
-          } else if (availableRowsNumber === 0) {
-            const pageRows = table.getRowModel().rows;
-            pageRows.filter(row => row.getIsSelected()).forEach(row => row.toggleSelected(false));
+          if (shouldSelect) {
+            if (remaining === 0) {
+              table.toggleAllPageRowsSelected(false);
+            };
+            const toSelect = unselectedOnPage.slice(0, remaining);
+            toSelect.forEach((row) => row.toggleSelected(true));
+            return;
           }
-          console.log("Selected rows: ", selectedRows);
+          // This works only when shouldSelect == false
+          table.toggleAllPageRowsSelected(false);
         },
         "aria-label": "Select all",
       }),
