@@ -12,12 +12,30 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
         indeterminate:
           table.getIsSomePageRowsSelected() &&
           !table.getIsAllPageRowsSelected(),
-        onCheckedChange: (value) => table.toggleAllPageRowsSelected(!!value),
+        disabled: !table.getIsAllPageRowsSelected() && table.getSelectedRowModel().rows.length >= 12 && !table.getIsSomePageRowsSelected(),
+        onCheckedChange: (value) => {
+          const selectedRows = table.getSelectedRowModel().rows.length;
+          const availableRowsNumber = 12 - selectedRows; // 12 - 11 = 1
+
+          if (availableRowsNumber >= 11) {
+            table.toggleAllPageRowsSelected(!!value);
+          } else if (availableRowsNumber > 0 && availableRowsNumber < 11 && !table.getIsAllPageRowsSelected()) {
+            const availableRows = table.getRowModel().rows.slice(0, availableRowsNumber);
+            availableRows.forEach(row => row.toggleSelected(!!value));
+          } else if (availableRowsNumber > 0 && availableRowsNumber < 11 && table.getIsAllPageRowsSelected()) {
+            table.toggleAllPageRowsSelected(!!value);
+          } else if (availableRowsNumber === 0) {
+            const pageRows = table.getRowModel().rows;
+            pageRows.filter(row => row.getIsSelected()).forEach(row => row.toggleSelected(false));
+          }
+          console.log("Selected rows: ", selectedRows);
+        },
         "aria-label": "Select all",
       }),
-    cell: ({ row }) => 
+    cell: ({ table, row }) => 
       renderComponent(Checkbox, {
         checked: row.getIsSelected(),
+        disabled: !row.getIsSelected() && table.getSelectedRowModel().rows.length >= 12,
         onCheckedChange: (value) => row.toggleSelected(!!value),
         "aria-label": "Select row",
       }),
