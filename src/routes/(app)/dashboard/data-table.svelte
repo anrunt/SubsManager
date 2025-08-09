@@ -62,13 +62,11 @@
   })
 
   let selectedRows = $derived(table.getSelectedRowModel().rows.map((row) => row.original as unknown as YoutubeSubs));
-//  let selectedRowsSubscriptionIds = $derived(selectedRows.map((row) => row.subscriptionId));
 
   $effect(() => {
     setSubscriptions(selectedRows);
   })
 
-//  $inspect(selectedRowsSubscriptionIds);
   $inspect(selectedRows);
 
   function handlePrevPage(event: Event) {
