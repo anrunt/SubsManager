@@ -7,7 +7,7 @@ import type { GaxiosResponse } from 'gaxios';
 import { z } from 'zod';
 import { error } from "@sveltejs/kit";
 
-const MAX_SELECTION = 12;
+const MAX_SELECTION = 20;
 
 export const load = async (event) => {
   if (event.locals.user === null) {
@@ -133,7 +133,9 @@ export const actions: Actions = {
 
     console.log("Selected subs:", selectedSubscriptions);
 
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: accessToken });
+//    const oauth2Client = new google.auth.OAuth2();
+//    oauth2Client.setCredentials({ access_token: accessToken });
+    
+    return { success: true };
   }
 }

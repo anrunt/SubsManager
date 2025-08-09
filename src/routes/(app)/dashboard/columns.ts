@@ -3,7 +3,7 @@ import type { ColumnDef } from "@tanstack/table-core";
 import { renderComponent } from "$lib/components/ui/data-table/index";
 import { Checkbox } from "$lib/components/ui/checkbox/index";
 
-const MAX_SELECTION = 12;
+const MAX_SELECTION = 20;
 
 export const columns: ColumnDef<YoutubeSubs>[] = [
   {
