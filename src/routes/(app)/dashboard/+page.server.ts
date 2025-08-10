@@ -6,8 +6,7 @@ import { updateSessionTokens } from "$lib/server/session";
 import type { GaxiosResponse } from 'gaxios';
 import { z } from 'zod';
 import { error } from "@sveltejs/kit";
-
-const MAX_SELECTION = 20;
+import { MAX_SELECTION } from "./columns";
 
 export const load = async (event) => {
   if (event.locals.user === null) {
@@ -128,7 +127,7 @@ export const actions: Actions = {
     }
 
     if (selectedSubscriptions.length > MAX_SELECTION) {
-      error(400, "You have selected more subscriptions than allowed. Please select up to 12 subscriptions.");
+      error(400, `You have selected more subscriptions than allowed. Please select up to ${MAX_SELECTION} subscriptions.`);
     }
 
     console.log("Selected subs:", selectedSubscriptions);

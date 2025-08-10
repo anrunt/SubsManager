@@ -6,6 +6,7 @@
   import { enhance } from "$app/forms";
   import * as Dialog from "$lib/components/ui/dialog/index";
   import * as Table from "$lib/components/ui/table/index.js";
+  import { MAX_SELECTION } from "./columns";
 
   let { data } = $props();
 
@@ -17,6 +18,7 @@
   let selectedSubscriptionsIds = $derived(selectedSubscriptions.map((value) => value.subscriptionId));
 
   let dialogOpen = $state(false);
+  let isDeleting = $state(false);
 </script>
 
 <div class="mt-2 flex flex-col gap-2">
@@ -59,7 +61,9 @@
         </div>
         <Dialog.Footer>
           <form action="?/deleteSubscriptions" method="post" use:enhance={() => {
+            isDeleting = true;
             return async ({result}) => {
+              isDeleting = false;
               if (result.type === "success") {
                 dialogOpen = false;
               }
@@ -68,16 +72,38 @@
             <input name="selectedSubscriptions" type="hidden" value={selectedSubscriptionsIds} />
             <button
               class="text-md flex h-12 cursor-pointer items-center justify-center gap-2 rounded-md bg-[#dc2626] px-6 text-white transition-colors hover:bg-[#b91c1c] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={selectedSubscriptions.length === 0}
+              disabled={selectedSubscriptions.length === 0 || isDeleting}
             >
               Delete Selected
+              {#if isDeleting}
+                <svg 
+                  class="animate-spin h-4 w-4 ml-2" 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  fill="none" 
+                  viewBox="0 0 24 24"
+                >
+                  <circle 
+                    class="opacity-25" 
+                    cx="12" 
+                    cy="12" 
+                    r="10" 
+                    stroke="currentColor" 
+                    stroke-width="4"
+                  ></circle>
+                  <path 
+                    class="opacity-75" 
+                    fill="currentColor" 
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              {/if}
             </button>
           </form>
         </Dialog.Footer>
       </Dialog.Content>
     </Dialog.Root>
 
-    <p>Selected Subscriptions: {selectedSubscriptions.length}</p>
+    <p>Selected Subscriptions: {selectedSubscriptions.length} / {MAX_SELECTION}</p>
   </div>
   <DataTable data={data.subscriptions} {columns} />
 </div>

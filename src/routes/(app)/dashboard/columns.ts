@@ -3,7 +3,7 @@ import type { ColumnDef } from "@tanstack/table-core";
 import { renderComponent } from "$lib/components/ui/data-table/index";
 import { Checkbox } from "$lib/components/ui/checkbox/index";
 
-const MAX_SELECTION = 20;
+export const MAX_SELECTION = 20;
 
 export const columns: ColumnDef<YoutubeSubs>[] = [
   {
@@ -40,7 +40,7 @@ export const columns: ColumnDef<YoutubeSubs>[] = [
     cell: ({ table, row }) => 
       renderComponent(Checkbox, {
         checked: row.getIsSelected(),
-        disabled: !row.getIsSelected() && table.getSelectedRowModel().rows.length >= 12,
+        disabled: !row.getIsSelected() && table.getSelectedRowModel().rows.length >= MAX_SELECTION,
         onCheckedChange: (value) => row.toggleSelected(!!value),
         "aria-label": "Select row",
       }),
