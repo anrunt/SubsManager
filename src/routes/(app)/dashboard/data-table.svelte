@@ -37,6 +37,7 @@
     },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getRowId: (row) => (row as YoutubeSubs).subscriptionId,
     onPaginationChange: (updater) => {
       if (typeof updater === "function") {
         pagination = updater(pagination);
@@ -67,7 +68,7 @@
     setSubscriptions(selectedRows);
   })
 
-  $inspect(selectedRows);
+  $inspect("Selected rows inspect:", selectedRows);
 
   function handlePrevPage(event: Event) {
     event?.preventDefault();

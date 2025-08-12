@@ -7,18 +7,19 @@
   import * as Dialog from "$lib/components/ui/dialog/index";
   import * as Table from "$lib/components/ui/table/index.js";
   import { MAX_SELECTION } from "./columns";
+  import { invalidateAll } from "$app/navigation";
 
   let { data } = $props();
 
-  onMount(() => {
-    console.log(data.subscriptions);
-  });
+  let dialogOpen = $state(false);
+  let isDeleting = $state(false);
 
   let selectedSubscriptions = $derived(getSubscriptions());
   let selectedSubscriptionsIds = $derived(selectedSubscriptions.map((value) => value.subscriptionId));
 
-  let dialogOpen = $state(false);
-  let isDeleting = $state(false);
+  onMount(() => {
+    console.log(data.subscriptions);
+  });
 </script>
 
 <div class="mt-2 flex flex-col gap-2">
@@ -65,6 +66,7 @@
             return async ({result}) => {
               isDeleting = false;
               if (result.type === "success") {
+                await invalidateAll();
                 dialogOpen = false;
               }
             }

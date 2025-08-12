@@ -7,6 +7,7 @@ import type { GaxiosResponse } from 'gaxios';
 import { z } from 'zod';
 import { error } from "@sveltejs/kit";
 import { MAX_SELECTION } from "./columns";
+import pLimit from 'p-limit';
 
 export const load = async (event) => {
   if (event.locals.user === null) {
@@ -132,8 +133,27 @@ export const actions: Actions = {
 
     console.log("Selected subs:", selectedSubscriptions);
 
-//    const oauth2Client = new google.auth.OAuth2();
-//    oauth2Client.setCredentials({ access_token: accessToken });
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: accessToken });
+
+    const limit = pLimit(5);
+
+    const deleteTasks = selectedSubscriptions.map((id) => {
+      return limit(async () => {
+        try {
+          await google.youtube('v3').subscriptions.delete({
+            id: id,
+            auth: oauth2Client,
+          });
+          console.log(`Deleted ${id}`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
+          console.error(`Error in deleting ${id}, err mess: ${err}`)
+        }
+      })
+    })
+
+    await Promise.allSettled(deleteTasks);
     
     return { success: true };
   }
