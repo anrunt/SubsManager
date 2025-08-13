@@ -1,5 +1,5 @@
 import { generateState, generateCodeVerifier } from "arctic";
-import { google, scopes } from "$lib/auth/oauth";
+import { google, scopes } from "$lib/server/oauth";
 
 import type { RequestEvent } from "@sveltejs/kit";
 

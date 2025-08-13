@@ -1,6 +1,6 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import { google, type youtube_v3 } from 'googleapis';
-import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/auth/oauth";
+import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/server/oauth";
 import type { YouTubeSubscription, YoutubeSubs } from '$lib/types/types';
 import { updateSessionTokens } from "$lib/server/session";
 import type { GaxiosResponse } from 'gaxios';

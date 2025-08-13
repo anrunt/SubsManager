@@ -1,7 +1,7 @@
 import type { RequestEvent } from "@sveltejs/kit";
 import type { OAuth2Tokens } from "arctic";
 
-import { google } from "$lib/auth/oauth";
+import { google } from "$lib/server/oauth";
 import { decodeIdToken } from "arctic";
 import { error } from "@sveltejs/kit";
 import { sessionLifetime } from "$lib/helper/helper";
