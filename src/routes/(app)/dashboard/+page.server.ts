@@ -1,11 +1,10 @@
-import { redirect, type Actions } from "@sveltejs/kit";
+import { fail, redirect, type Actions } from "@sveltejs/kit";
 import { google, type youtube_v3 } from 'googleapis';
 import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/auth/oauth";
 import type { YouTubeSubscription, YoutubeSubs } from '$lib/types/types';
 import { updateSessionTokens } from "$lib/server/session";
 import type { GaxiosResponse } from 'gaxios';
 import { z } from 'zod';
-import { error } from "@sveltejs/kit";
 import { MAX_SELECTION } from "./columns";
 import pLimit from 'p-limit';
 
@@ -87,6 +86,38 @@ export const actions: Actions = {
       throw redirect(302, "/login");
     }
 
+    const data = await event.request.formData();
+    const selectedSubscriptionsRaw = data.get('selectedSubscriptions');
+    
+    const subscriptionIdsSchema = z.string().transform((str) => {
+      return str.split(',').map(id => id.trim()).filter(id => id);
+    });
+    
+    let selectedSubscriptions: string[] = [];
+    
+    try {
+      selectedSubscriptions = subscriptionIdsSchema.parse(selectedSubscriptionsRaw);
+    } catch (error) {
+      console.error("Invalid selectedSubscriptions format:", error);
+      return fail(400, {
+        error: "Invalid selectedSubscriptions format."
+      });
+    }
+
+    if (selectedSubscriptions.length === 0) {
+      return fail(400, {
+        error: "No subscriptions selected."
+      });
+    }
+
+    if (selectedSubscriptions.length > MAX_SELECTION) {
+      return fail(400, {
+        error: "You have selected more subscriptions than allowed!"
+      });
+    }
+
+    console.log("Selected subs:", selectedSubscriptions);
+
     let { accessToken, refreshToken, accessTokenExpiresAt } = event.locals.user;
     const sessionId = event.cookies.get("session")!;
 
@@ -110,28 +141,6 @@ export const actions: Actions = {
         throw redirect(302, "/login");
       }
     }
-
-    const data = await event.request.formData();
-    const selectedSubscriptionsRaw = data.get('selectedSubscriptions');
-    
-    const subscriptionIdsSchema = z.string().transform((str) => {
-      return str.split(',').map(id => id.trim()).filter(id => id);
-    });
-    
-    let selectedSubscriptions: string[] = [];
-    
-    try {
-      selectedSubscriptions = subscriptionIdsSchema.parse(selectedSubscriptionsRaw);
-    } catch (error) {
-      console.error("Invalid selectedSubscriptions format:", error);
-      selectedSubscriptions = [];
-    }
-
-    if (selectedSubscriptions.length > MAX_SELECTION) {
-      error(400, `You have selected more subscriptions than allowed. Please select up to ${MAX_SELECTION} subscriptions.`);
-    }
-
-    console.log("Selected subs:", selectedSubscriptions);
 
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials({ access_token: accessToken });
