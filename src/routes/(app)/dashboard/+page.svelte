@@ -1,12 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import DataTable from "./data-table.svelte";
-  import { columns } from "./columns";
-  import { getSubscriptions } from "./subscriptions.svelte";
+  import { columns } from "./columns.svelte";
+  import { getSubscriptions, setMaxSelection } from "./subscriptions.svelte";
   import { enhance } from "$app/forms";
   import * as Dialog from "$lib/components/ui/dialog/index";
   import * as Table from "$lib/components/ui/table/index.js";
-  import { MAX_SELECTION } from "./columns";
   import { invalidateAll } from "$app/navigation";
 
   let { data } = $props();
@@ -18,6 +17,7 @@
   let selectedSubscriptionsIds = $derived(selectedSubscriptions.map((value) => value.subscriptionId));
 
   onMount(() => {
+    setMaxSelection(data.remainingSubs);
     console.log(data.subscriptions);
   });
 </script>
@@ -105,7 +105,7 @@
       </Dialog.Content>
     </Dialog.Root>
 
-    <p>Selected Subscriptions: {selectedSubscriptions.length} / {MAX_SELECTION}</p>
+    <p>Selected Subscriptions: {selectedSubscriptions.length} / {data.remainingSubs}</p>
   </div>
   <DataTable data={data.subscriptions} {columns} />
 </div>

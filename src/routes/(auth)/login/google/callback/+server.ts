@@ -6,6 +6,7 @@ import { decodeIdToken } from "arctic";
 import { error } from "@sveltejs/kit";
 import { sessionLifetime } from "$lib/helper/helper";
 import { getOrCreateSessionForGoogleUser, setSessionCookie } from "$lib/server/session";
+import { redis_client } from "$lib/db/redis";
 
 interface GoogleClaims {
   sub: string;
@@ -59,6 +60,11 @@ export async function GET(event: RequestEvent): Promise<Response> {
   if (sessionId === null) {
     error(500, 'Failed to create user session, please try again');
   }
+
+  const userGoogleIdKey = `user:${googleUserId}`;
+  await redis_client.set(userGoogleIdKey, "0", {
+    nx: true
+  }); 
 
   setSessionCookie(event, sessionId, new Date(Date.now() + sessionLifetime));
 

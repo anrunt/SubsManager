@@ -2,8 +2,9 @@ import type { YoutubeSubs } from "$lib/types/types";
 import type { ColumnDef } from "@tanstack/table-core";
 import { renderComponent } from "$lib/components/ui/data-table/index";
 import { Checkbox } from "$lib/components/ui/checkbox/index";
+import { getMaxSelection } from "./subscriptions.svelte";
 
-export const MAX_SELECTION = 20;
+const MAX_SELECTION = $derived(getMaxSelection());
 
 export const columns: ColumnDef<YoutubeSubs>[] = [
   {

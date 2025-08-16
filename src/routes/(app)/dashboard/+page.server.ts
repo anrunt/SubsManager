@@ -5,8 +5,13 @@ import type { YouTubeSubscription, YoutubeSubs } from '$lib/types/types';
 import { updateSessionTokens } from "$lib/server/session";
 import type { GaxiosResponse } from 'gaxios';
 import { z } from 'zod';
-import { MAX_SELECTION } from "./columns";
 import pLimit from 'p-limit';
+import { redis_client } from "$lib/db/redis";
+import { getMaxSelection } from "./subscriptions.svelte";
+
+const MAX_SELECTION = 50;
+
+const deletedSubsNumberSchema = z.coerce.number()
 
 export const load = async (event) => {
   if (event.locals.user === null) {
@@ -36,6 +41,12 @@ export const load = async (event) => {
       throw redirect(302, "/login");
     }
   }
+
+  const googleUserIdKey = `user:${event.locals.user.googleUserId}`;
+  const deletedSubsNumberRaw = await redis_client.get(googleUserIdKey);
+  const deletedSubsNumber = deletedSubsNumberSchema.parse(deletedSubsNumberRaw);
+
+  const remainingSubs = MAX_SELECTION - deletedSubsNumber;
 
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({ access_token: accessToken });
@@ -70,12 +81,14 @@ export const load = async (event) => {
     }));
 
     return {
-      subscriptions: transformedSubscriptions
+      subscriptions: transformedSubscriptions,
+      remainingSubs: remainingSubs
     };
   } catch (error) {
     console.error("API call failed:", error);
     return {
-      subscriptions: []
+      subscriptions: [],
+      remainingSubs: 0
     };
   }
 };
@@ -110,13 +123,18 @@ export const actions: Actions = {
       });
     }
 
-    if (selectedSubscriptions.length > MAX_SELECTION) {
+    // Check if this will work
+    const currentMaxSelection = getMaxSelection();
+
+    if (selectedSubscriptions.length > currentMaxSelection) {
       return fail(400, {
         error: "You have selected more subscriptions than allowed!"
       });
     }
 
     console.log("Selected subs:", selectedSubscriptions);
+
+    // Here we check if user didnt exceed the 50 subs&day limit
 
     let { accessToken, refreshToken, accessTokenExpiresAt } = event.locals.user;
     const sessionId = event.cookies.get("session")!;
