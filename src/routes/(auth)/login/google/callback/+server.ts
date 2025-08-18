@@ -61,11 +61,6 @@ export async function GET(event: RequestEvent): Promise<Response> {
     error(500, 'Failed to create user session, please try again');
   }
 
-  const userGoogleIdKey = `user:${googleUserId}`;
-  await redis_client.set(userGoogleIdKey, "0", {
-    nx: true
-  }); 
-
   setSessionCookie(event, sessionId, new Date(Date.now() + sessionLifetime));
 
   return new Response(null, {

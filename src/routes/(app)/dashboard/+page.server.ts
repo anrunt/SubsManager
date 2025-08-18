@@ -7,11 +7,11 @@ import type { GaxiosResponse } from 'gaxios';
 import { z } from 'zod';
 import pLimit from 'p-limit';
 import { redis_client } from "$lib/db/redis";
-import { getMaxSelection } from "./subscriptions.svelte";
+import { sessionLifetime } from "$lib/helper/helper";
 
 const MAX_SELECTION = 50;
 
-const deletedSubsNumberSchema = z.coerce.number()
+const deletedSubsNumberSchema = z.coerce.number();
 
 export const load = async (event) => {
   if (event.locals.user === null) {
@@ -43,6 +43,15 @@ export const load = async (event) => {
   }
 
   const googleUserIdKey = `user:${event.locals.user.googleUserId}`;
+  const deletedSubsNumberRawFirst = await redis_client.get(googleUserIdKey);
+
+  if (deletedSubsNumberRawFirst === null) {
+    await redis_client.set(googleUserIdKey, "0", {
+      ex: sessionLifetime / 1000,
+      nx: true
+    }); 
+  }
+
   const deletedSubsNumberRaw = await redis_client.get(googleUserIdKey);
   const deletedSubsNumber = deletedSubsNumberSchema.parse(deletedSubsNumberRaw);
 
@@ -98,8 +107,6 @@ export const actions: Actions = {
     if (event.locals.user === null) {
       throw redirect(302, "/login");
     }
-
-    // Here we check if user didnt exceed the 50 subs&day limit
 
     const data = await event.request.formData();
     const selectedSubscriptionsRaw = data.get('selectedSubscriptions');
