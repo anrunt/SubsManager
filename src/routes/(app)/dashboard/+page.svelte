@@ -27,22 +27,13 @@
 
 <div class="mt-2 flex flex-col gap-2">
   <div class="flex items-center gap-4">
-    <div class="flex flex-col gap-1">
-      <Dialog.Root bind:open={dialogOpen}>
-        <Dialog.Trigger
-          class="ml-2 text-md flex h-12 cursor-pointer items-center justify-center gap-2 rounded-md bg-[#dc2626] px-6 text-white transition-colors hover:bg-[#b91c1c] disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={selectedSubscriptions.length === 0 || data.remainingSubs === 0}
-        >
-          Delete
-        </Dialog.Trigger>
-      </Dialog.Root>
-      {#if data.remainingSubs === 0}
-        <div class="ml-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md border border-red-200">
-          <p class="font-medium">Limit usuwania subskrypcji osiągnięty</p>
-          <p class="text-xs text-red-500 mt-1">Kolejne usunięcia będą dostępne za 24 godziny</p>
-        </div>
-      {/if}
-    </div>
+    <Dialog.Root bind:open={dialogOpen}>
+      <Dialog.Trigger
+        class="ml-2 text-md flex h-12 cursor-pointer items-center justify-center gap-2 rounded-md bg-[#dc2626] px-6 text-white transition-colors hover:bg-[#b91c1c] disabled:cursor-not-allowed disabled:opacity-50"
+        disabled={selectedSubscriptions.length === 0 || data.remainingSubs === 0}
+      >
+        Delete
+      </Dialog.Trigger>
       <Dialog.Content>
         <Dialog.Header>
           <Dialog.Title class="text-xl">Are you sure absolutely sure?</Dialog.Title>
@@ -116,13 +107,19 @@
         </Dialog.Footer>
       </Dialog.Content>
     </Dialog.Root>
+    {#if data.remainingSubs === 0}
+      <div class="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md border border-red-200">
+        <p class="font-medium">Subscription deletion limit reached</p>
+        <p class="text-xs text-red-500 mt-1">Next deletions available in 24 hours</p>
+      </div>
+    {/if}
 
     <div class="flex flex-col gap-1">
-      <p class="text-sm">Wybrane subskrypcje: {selectedSubscriptions.length}</p>
+      <p class="text-sm">Selected subscriptions: {selectedSubscriptions.length}</p>
       {#if data.remainingSubs > 0}
-        <p class="text-xs text-gray-600">Pozostało do usunięcia: {data.remainingSubs} / 50</p>
+        <p class="text-xs text-gray-600">Remaining deletions: {data.remainingSubs} / 50</p>
       {:else}
-        <p class="text-xs text-red-600 font-medium">Dzienny limit usuwania (50) został wyczerpany</p>
+        <p class="text-xs text-red-600 font-medium">Daily deletion limit (50) exhausted</p>
       {/if}
     </div>
   </div>
