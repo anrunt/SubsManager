@@ -99,6 +99,8 @@ export const actions: Actions = {
       throw redirect(302, "/login");
     }
 
+    // Here we check if user didnt exceed the 50 subs&day limit
+
     const data = await event.request.formData();
     const selectedSubscriptionsRaw = data.get('selectedSubscriptions');
     
@@ -123,18 +125,16 @@ export const actions: Actions = {
       });
     }
 
-    // Check if this will work
-    const currentMaxSelection = getMaxSelection();
+    const googleUserIdKey = `user:${event.locals.user.googleUserId}`;
+    const deletedSubsNumberRaw = await redis_client.get(googleUserIdKey);
+    const deletedSubsNumber = deletedSubsNumberSchema.parse(deletedSubsNumberRaw);
+    const remainingSubs = MAX_SELECTION - deletedSubsNumber;
 
-    if (selectedSubscriptions.length > currentMaxSelection) {
-      return fail(400, {
-        error: "You have selected more subscriptions than allowed!"
-      });
+    if (selectedSubscriptions.length > remainingSubs) {
+      return fail(400, { error: "You have selected more subscriptions than allowed!" });
     }
 
     console.log("Selected subs:", selectedSubscriptions);
-
-    // Here we check if user didnt exceed the 50 subs&day limit
 
     let { accessToken, refreshToken, accessTokenExpiresAt } = event.locals.user;
     const sessionId = event.cookies.get("session")!;
@@ -181,7 +181,10 @@ export const actions: Actions = {
     })
 
     await Promise.allSettled(deleteTasks);
-    
+
+    // Here we update the deleted subs number
+    await redis_client.incrby(googleUserIdKey, selectedSubscriptions.length);
+
     return { success: true };
   }
 }

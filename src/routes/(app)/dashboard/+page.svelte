@@ -16,8 +16,11 @@
   let selectedSubscriptions = $derived(getSubscriptions());
   let selectedSubscriptionsIds = $derived(selectedSubscriptions.map((value) => value.subscriptionId));
 
-  onMount(() => {
+  $effect(() => {
     setMaxSelection(data.remainingSubs);
+  });
+
+  onMount(() => {
     console.log(data.subscriptions);
   });
 </script>
