@@ -30,7 +30,7 @@
     <Dialog.Root bind:open={dialogOpen}>
       <Dialog.Trigger
         class="ml-2 text-md flex h-12 cursor-pointer items-center justify-center gap-2 rounded-md bg-[#dc2626] px-6 text-white transition-colors hover:bg-[#b91c1c] disabled:cursor-not-allowed disabled:opacity-50"
-        disabled={selectedSubscriptions.length === 0}
+        disabled={selectedSubscriptions.length === 0 || data.remainingSubs === 0}
       >
         Delete
       </Dialog.Trigger>
@@ -108,7 +108,13 @@
       </Dialog.Content>
     </Dialog.Root>
 
-    <p>Selected Subscriptions: {selectedSubscriptions.length} / {data.remainingSubs}</p>
+    {#if data.remainingSubs === 0}
+      <p class="text-orange-600">
+        You've reached your daily limit of 50 subscription deletions. Try again in 24 hours.
+      </p>
+    {:else}
+      <p>Selected Subscriptions: {selectedSubscriptions.length} / {data.remainingSubs}</p>
+    {/if}
   </div>
   <DataTable data={data.subscriptions} {columns} />
 </div>

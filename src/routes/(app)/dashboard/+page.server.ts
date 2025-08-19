@@ -7,7 +7,7 @@ import type { GaxiosResponse } from 'gaxios';
 import { z } from 'zod';
 import pLimit from 'p-limit';
 import { redis_client } from "$lib/db/redis";
-import { sessionLifetime } from "$lib/helper/helper";
+import { subsCountTtl } from "$lib/helper/helper";
 
 const MAX_SELECTION = 50;
 
@@ -47,7 +47,7 @@ export const load = async (event) => {
 
   if (deletedSubsNumberRawFirst === null) {
     await redis_client.set(googleUserIdKey, "0", {
-      ex: sessionLifetime / 1000,
+      ex: subsCountTtl / 1000,
       nx: true
     }); 
   }
@@ -190,7 +190,17 @@ export const actions: Actions = {
     await Promise.allSettled(deleteTasks);
 
     // Here we update the deleted subs number
-    await redis_client.incrby(googleUserIdKey, selectedSubscriptions.length);
+    const currentValue = await redis_client.get(googleUserIdKey);
+    const currentNumber = deletedSubsNumberSchema.parse(currentValue);
+    const newValue = currentNumber + selectedSubscriptions.length;
+
+    if (currentNumber === 0) {
+      await redis_client.set(googleUserIdKey, newValue.toString(), {
+        ex: subsCountTtl / 1000
+      });
+    } else {
+      await redis_client.set(googleUserIdKey, newValue.toString());
+    }
 
     return { success: true };
   }
