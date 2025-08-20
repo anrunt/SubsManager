@@ -9,7 +9,7 @@ import pLimit from 'p-limit';
 import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
 
-const MAX_SELECTION = 50;
+const MAX_SELECTION = 5;
 
 const deletedSubsNumberSchema = z.coerce.number();
 
@@ -57,6 +57,9 @@ export const load = async (event) => {
 
   const remainingSubs = MAX_SELECTION - deletedSubsNumber;
 
+  // There we get the user ttl for limit reset
+  const subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
+
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({ access_token: accessToken });
 
@@ -91,13 +94,15 @@ export const load = async (event) => {
 
     return {
       subscriptions: transformedSubscriptions,
-      remainingSubs: remainingSubs
+      remainingSubs: remainingSubs,
+      subsLockTimeReset: subsLockTimeReset
     };
   } catch (error) {
     console.error("API call failed:", error);
     return {
       subscriptions: [],
-      remainingSubs: 0
+      remainingSubs: 0,
+      subsLockTimeReset: -1
     };
   }
 };
@@ -189,18 +194,15 @@ export const actions: Actions = {
 
     await Promise.allSettled(deleteTasks);
 
-    // Here we update the deleted subs number
-    const currentValue = await redis_client.get(googleUserIdKey);
-    const currentNumber = deletedSubsNumberSchema.parse(currentValue);
-    const newValue = currentNumber + selectedSubscriptions.length;
-
-    if (currentNumber === 0) {
-      await redis_client.set(googleUserIdKey, newValue.toString(), {
-        ex: subsCountTtl / 1000
+    const keyExists = await redis_client.exists(googleUserIdKey);
+    if (keyExists === 0) {
+      await redis_client.set(googleUserIdKey, "0", {
+        ex: subsCountTtl / 1000,
+        nx: true
       });
-    } else {
-      await redis_client.set(googleUserIdKey, newValue.toString());
     }
+
+    await redis_client.incrby(googleUserIdKey, selectedSubscriptions.length);
 
     return { success: true };
   }

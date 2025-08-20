@@ -62,7 +62,11 @@
     }
   })
 
-  let selectedRows = $derived(table.getSelectedRowModel().rows.map((row) => row.original as unknown as YoutubeSubs));
+  let selectedRows = $derived(
+    data && data.length > 0 && table.getSelectedRowModel().rows 
+      ? table.getSelectedRowModel().rows.map((row) => row.original as unknown as YoutubeSubs)
+      : []
+  );
 
   $effect(() => {
     setSubscriptions(selectedRows);

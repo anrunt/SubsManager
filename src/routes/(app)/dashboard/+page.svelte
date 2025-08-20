@@ -16,6 +16,22 @@
   let selectedSubscriptions = $derived(getSubscriptions());
   let selectedSubscriptionsIds = $derived(selectedSubscriptions.map((value) => value.subscriptionId));
 
+  let subsLockTimeReset = data.subsLockTimeReset;
+
+//  let intervalId = setInterval(() => {
+//    const hours = Math.floor(subsLockTimeReset / 3600);
+//    const minutes = Math.floor((subsLockTimeReset % 3600) / 60);
+//    const seconds = subsLockTimeReset % 60;
+//
+//    console.log(`Timer: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds}`);
+//
+//    if (subsLockTimeReset === 0) {
+//      clearInterval(intervalId);
+//    } else {
+//      subsLockTimeReset -= 1;
+//    }
+//  }, 1000);
+
   $effect(() => {
     setMaxSelection(data.remainingSubs);
   });
