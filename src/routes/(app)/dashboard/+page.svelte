@@ -18,19 +18,8 @@
 
   let subsLockTimeReset = data.subsLockTimeReset;
 
-//  let intervalId = setInterval(() => {
-//    const hours = Math.floor(subsLockTimeReset / 3600);
-//    const minutes = Math.floor((subsLockTimeReset % 3600) / 60);
-//    const seconds = subsLockTimeReset % 60;
-//
-//    console.log(`Timer: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds}`);
-//
-//    if (subsLockTimeReset === 0) {
-//      clearInterval(intervalId);
-//    } else {
-//      subsLockTimeReset -= 1;
-//    }
-//  }, 1000);
+  let hours = Math.floor(subsLockTimeReset / 3600);
+  let minutes = Math.floor((subsLockTimeReset % 3600) / 60);
 
   $effect(() => {
     setMaxSelection(data.remainingSubs);
@@ -125,9 +114,15 @@
     </Dialog.Root>
 
     {#if data.remainingSubs === 0}
-      <p class="text-orange-600">
-        You've reached your daily limit of 50 subscription deletions. Try again in 24 hours.
-      </p>
+      {#if hours > 0}
+        <p class="text-orange-600">
+          You've reached your daily limit of 50 subscription deletions. Try again in {hours} hour{hours > 1 ? 's' : ''}.
+        </p>
+      {:else}
+        <p class="text-orange-600">
+          You've reached your daily limit of 50 subscription deletions. Try again in {minutes} minute{minutes > 1 ? 's' : ''}.
+        </p>
+      {/if}
     {:else}
       <p>Selected Subscriptions: {selectedSubscriptions.length} / {data.remainingSubs}</p>
     {/if}
