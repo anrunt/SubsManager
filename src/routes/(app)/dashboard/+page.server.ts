@@ -13,6 +13,37 @@ const MAX_SELECTION = 5;
 
 const deletedSubsNumberSchema = z.coerce.number();
 
+async function getLastVideoPublishedAt(accessToken: string, channelId: string | undefined) {
+  const oauth2Client = new google.auth.OAuth2();
+  oauth2Client.setCredentials({ access_token: accessToken });
+
+  try {
+    const response = await google.youtube('v3').activities.list({
+      auth: oauth2Client,
+      part: ['snippet'],
+      channelId: channelId,
+      maxResults: 1,
+      publishedAfter: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString()
+    });
+
+    const items = response.data.items ?? [];
+    if (items.length === 0) {
+      console.log("Null");
+    }
+
+    const activity = items[0];
+    if (activity.snippet?.type === 'upload') {
+      console.log(activity.snippet.publishedAt ?? "null");
+      return activity.snippet.publishedAt ?? null;
+    }
+
+    return null;
+  } catch(error) {
+    console.error(`Error fetching activities for channel ${channelId}` ,error);
+    return null;
+  }
+}
+
 export const load = async (event) => {
   if (event.locals.user === null) {
     throw redirect(302, "/login");
@@ -92,8 +123,20 @@ export const load = async (event) => {
       subscriptionId: subscription.id
     }));
 
+    const limit = pLimit(5);
+    const subsLastVideo = await Promise.all(
+      transformedSubscriptions.map(sub => {
+        limit(async () => {
+          const channelId = sub.channelLink.split('/').pop();
+          await getLastVideoPublishedAt(accessToken, channelId);
+        })
+      })
+    )
+
+
     return {
       subscriptions: transformedSubscriptions,
+      allSubscriptions: allSubscriptions,
       remainingSubs: remainingSubs,
       subsLockTimeReset: subsLockTimeReset
     };
@@ -101,6 +144,7 @@ export const load = async (event) => {
     console.error("API call failed:", error);
     return {
       subscriptions: [],
+      allSubscriptions: [],
       remainingSubs: 0,
       subsLockTimeReset: -1
     };
