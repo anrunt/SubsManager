@@ -66,6 +66,15 @@ export const columns: ColumnDef<YoutubeSubsAll>[] = [
     maxSize: 400,
   },
   {
+    accessorKey: "lastVideoPublishedAt",
+    header: "Last Video Date",
+    cell: ({ row }) => {
+      const lastVideoPublishedAt = row.original.lastVideoPublishedAt;
+      if (!lastVideoPublishedAt) return "No videos";
+      return new Date(lastVideoPublishedAt).toLocaleDateString();
+    },
+  },
+  {
     accessorKey: "channelLink",
     header: "Link",
   },
