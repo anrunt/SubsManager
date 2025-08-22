@@ -25,7 +25,7 @@
 
   let rowSelection = $state<RowSelectionState>({});
   let pagination = $state<PaginationState>({pageIndex: 0, pageSize: 11});
-  let sorting = $state<SortingState>([]);
+  let sorting = $state<SortingState>([{id: "lastVideoPublishedAt", desc: true}]);
 
   const table = createSvelteTable({
     get data() {
@@ -36,8 +36,7 @@
       columnVisibility: {
         channelLink: false,
         subscriptionId: false
-      },
-      sorting: [{id: "lastVideoPublishedAt", desc: true}]
+      }
     },
     enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
