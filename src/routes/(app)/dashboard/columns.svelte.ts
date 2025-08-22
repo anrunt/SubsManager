@@ -71,7 +71,8 @@ export const columns: ColumnDef<YoutubeSubsAll>[] = [
     accessorKey: "lastVideoPublishedAt",
     header: ({ column }) => {
       return renderComponent(DataTableVideoDateButton, {
-        onclick: column.getToggleSortingHandler()
+        onclick: column.getToggleSortingHandler(),
+        column: column,
       });
     },
     cell: ({ row }) => {

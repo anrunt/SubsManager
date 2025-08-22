@@ -1,13 +1,18 @@
 <script lang="ts">
   import type { ComponentProps } from "svelte";
-  import CalendarIcon from "@lucide/svelte/icons/calendar";
+  import { ArrowUp, ArrowDown } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
+
+  let { variant = "ghost", column, ...restProps }: ComponentProps<typeof Button> & { column?: any } = $props();
   
-  let { variant = "ghost", ...restProps }: ComponentProps<typeof Button> =
-   $props();
- </script>
-  
- <Button {variant} {...restProps}>
+  let sortDirection = $derived(column?.getIsSorted());
+</script>
+
+<Button {variant} {...restProps}>
   Last Video Date
-  <CalendarIcon class="ml-2" />
- </Button>
+  {#if sortDirection === "desc"}
+    <ArrowDown class="ml-2" />
+  {:else}
+    <ArrowUp class="ml-2" />
+  {/if}
+</Button>

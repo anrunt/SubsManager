@@ -36,8 +36,10 @@
       columnVisibility: {
         channelLink: false,
         subscriptionId: false
-      }
+      },
+      sorting: [{id: "lastVideoPublishedAt", desc: true}]
     },
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
