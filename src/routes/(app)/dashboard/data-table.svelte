@@ -6,7 +6,7 @@
     getCoreRowModel,
     getPaginationRowModel,
   } from "@tanstack/table-core";
-  import type { YoutubeSubs } from "$lib/types/types";
+  import type { YoutubeSubsAll } from "$lib/types/types";
   import {
     createSvelteTable,
     FlexRender,
@@ -37,7 +37,7 @@
     },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getRowId: (row) => (row as YoutubeSubs).subscriptionId,
+    getRowId: (row) => (row as YoutubeSubsAll).subscriptionId,
     onPaginationChange: (updater) => {
       if (typeof updater === "function") {
         pagination = updater(pagination);
@@ -64,7 +64,7 @@
 
   let selectedRows = $derived(
     data && data.length > 0 && table.getSelectedRowModel().rows 
-      ? table.getSelectedRowModel().rows.map((row) => row.original as unknown as YoutubeSubs)
+      ? table.getSelectedRowModel().rows.map((row) => row.original as unknown as YoutubeSubsAll)
       : []
   );
 

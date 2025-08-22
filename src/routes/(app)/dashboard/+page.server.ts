@@ -18,26 +18,39 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string | 
   oauth2Client.setCredentials({ access_token: accessToken });
 
   try {
-    const response = await google.youtube('v3').activities.list({
+    const channelResponse: GaxiosResponse<youtube_v3.Schema$ChannelListResponse> = await google.youtube('v3').channels.list({
       auth: oauth2Client,
-      part: ['snippet'],
-      channelId: channelId,
+      part: ['contentDetails'],
+      id: [channelId!],
       maxResults: 1,
-      publishedAfter: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString()
     });
 
-    const items = response.data.items ?? [];
+    const channel = channelResponse.data.items?.[0];
+    const uploadsPlaylistId = channel?.contentDetails?.relatedPlaylists?.uploads;
+
+    if (!uploadsPlaylistId) {
+      console.log(`Channel ${channelId}, no upload playlist found`)
+      return null;
+    }
+
+    const playlistResponse = await google.youtube('v3').playlistItems.list({
+      auth: oauth2Client,
+      part: ['snippet'],
+      playlistId: uploadsPlaylistId,
+      maxResults: 1,
+    })
+
+    const items = playlistResponse.data.items ?? [];
+
     if (items.length === 0) {
-      console.log("Null");
+      console.log(`Channel ${channelId}, no playlist items found`)
+      return null;
     }
 
-    const activity = items[0];
-    if (activity.snippet?.type === 'upload') {
-      console.log(activity.snippet.publishedAt ?? "null");
-      return activity.snippet.publishedAt ?? null;
-    }
+    const lastVideo = items[0];
+    console.log("Last video:", lastVideo.snippet?.publishedAt);
 
-    return null;
+    return lastVideo.snippet?.publishedAt ?? null;
   } catch(error) {
     console.error(`Error fetching activities for channel ${channelId}` ,error);
     return null;
@@ -124,18 +137,21 @@ export const load = async (event) => {
     }));
 
     const limit = pLimit(5);
-    const subsLastVideo = await Promise.all(
+    const subscriptionsWithLastVideo = await Promise.all(
       transformedSubscriptions.map(sub => {
-        limit(async () => {
+        return limit(async () => {
           const channelId = sub.channelLink.split('/').pop();
-          await getLastVideoPublishedAt(accessToken, channelId);
+          const lastVideo = await getLastVideoPublishedAt(accessToken, channelId);
+          return {
+            ...sub,
+            lastVideoPublishedAt: lastVideo
+          };
         })
       })
     )
 
-
     return {
-      subscriptions: transformedSubscriptions,
+      subscriptions: subscriptionsWithLastVideo,
       allSubscriptions: allSubscriptions,
       remainingSubs: remainingSubs,
       subsLockTimeReset: subsLockTimeReset

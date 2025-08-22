@@ -26,7 +26,7 @@
   });
 
   onMount(() => {
-    console.log(data.allSubscriptions);
+    console.log(data.subscriptions);
   });
 </script>
 
