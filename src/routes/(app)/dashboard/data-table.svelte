@@ -3,8 +3,10 @@
     type ColumnDef,
     type PaginationState,
     type RowSelectionState,
+    type SortingState,
     getCoreRowModel,
     getPaginationRowModel,
+    getSortedRowModel,
   } from "@tanstack/table-core";
   import type { YoutubeSubsAll } from "$lib/types/types";
   import {
@@ -23,6 +25,7 @@
 
   let rowSelection = $state<RowSelectionState>({});
   let pagination = $state<PaginationState>({pageIndex: 0, pageSize: 11});
+  let sorting = $state<SortingState>([{id: "lastVideoPublishedAt", desc: true}]);
 
   const table = createSvelteTable({
     get data() {
@@ -35,9 +38,18 @@
         subscriptionId: false
       }
     },
+    enableSortingRemoval: false,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getRowId: (row) => (row as YoutubeSubsAll).subscriptionId,
+    onSortingChange: (updater) => {
+      if (typeof updater === "function") {
+        sorting = updater(sorting);
+      } else {
+        sorting = updater;
+      }
+    },
     onPaginationChange: (updater) => {
       if (typeof updater === "function") {
         pagination = updater(pagination);
@@ -58,6 +70,9 @@
       },
       get rowSelection() {
         return rowSelection;
+      },
+      get sorting() {
+        return sorting;
       }
     }
   })

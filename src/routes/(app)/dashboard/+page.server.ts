@@ -13,7 +13,7 @@ const MAX_SELECTION = 5;
 
 const deletedSubsNumberSchema = z.coerce.number();
 
-async function getLastVideoPublishedAt(accessToken: string, channelId: string | undefined) {
+async function getLastVideoPublishedAt(accessToken: string, channelId: string ) {
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({ access_token: accessToken });
 
@@ -140,7 +140,7 @@ export const load = async (event) => {
     const subscriptionsWithLastVideo = await Promise.all(
       transformedSubscriptions.map(sub => {
         return limit(async () => {
-          const channelId = sub.channelLink.split('/').pop();
+          const channelId = sub.channelLink.split('/').pop()!;
           const lastVideo = await getLastVideoPublishedAt(accessToken, channelId);
           return {
             ...sub,

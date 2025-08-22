@@ -3,6 +3,8 @@ import type { ColumnDef } from "@tanstack/table-core";
 import { renderComponent } from "$lib/components/ui/data-table/index";
 import { Checkbox } from "$lib/components/ui/checkbox/index";
 import { getMaxSelection } from "./subscriptions.svelte";
+import LastVideoDate from "./lastVideoDate.svelte";
+import DataTableVideoDateButton from "./data-table-videoDate-button.svelte";
 
 const MAX_SELECTION = $derived(getMaxSelection());
 
@@ -64,6 +66,20 @@ export const columns: ColumnDef<YoutubeSubsAll>[] = [
     size: 300,
     minSize: 200,
     maxSize: 400,
+  },
+  {
+    accessorKey: "lastVideoPublishedAt",
+    header: ({ column }) => {
+      return renderComponent(DataTableVideoDateButton, {
+        onclick: column.getToggleSortingHandler(),
+        column: column,
+      });
+    },
+    cell: ({ row }) => {
+      const lastVideoPublishedAt = row.original.lastVideoPublishedAt;
+      if (!lastVideoPublishedAt) return "No videos";
+      return renderComponent(LastVideoDate, { lastVideoPublishedAt });
+    },
   },
   {
     accessorKey: "channelLink",
