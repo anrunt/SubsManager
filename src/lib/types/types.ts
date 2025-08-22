@@ -17,6 +17,11 @@ export type YoutubeSubs = {
   subscriptionId: string;
 }
 
+// Rozszerzenie typu YoutubeSubs - dodaj tutaj dodatkowe pola
+export type YoutubeSubsAll = YoutubeSubs & {
+  lastVideoPublishedAt: string | null;
+}
+
 export type YouTubeSubscription = {
   kind: string;
   etag: string;

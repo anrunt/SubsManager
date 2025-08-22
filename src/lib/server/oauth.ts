@@ -9,7 +9,7 @@ export const google = new Google(
   process.env.REDIRECT_URI!
 );
 
-export const scopes = ["openid", "profile", "https://www.googleapis.com/auth/youtube.readonly"];
+export const scopes = ["openid", "profile", "https://www.googleapis.com/auth/youtube.force-ssl"];
 
 export function isTokenExpired(expiresAt: number): boolean {
   const now = Math.floor(Date.now() / 1000);
@@ -20,10 +20,10 @@ export function isTokenExpired(expiresAt: number): boolean {
 export async function refreshAccessTokenWithExpiry(refreshToken: string) {
   const tokens = await google.refreshAccessToken(refreshToken);
   const expiresAt = tokens.accessTokenExpiresAt().getTime() / 1000;
-  
+
   return {
     accessToken: tokens.accessToken(),
-    refreshToken: tokens.refreshToken() || refreshToken,
+    refreshToken: refreshToken || tokens.refreshToken(),
     expiresAt
   };
 }
