@@ -106,7 +106,6 @@ export const load = async (event) => {
   let subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
   console.log(`LOAD - TTL check: ${subsLockTimeReset}`);
   
-  // Napraw TTL jeśli jest ustawiony na forever (-1)
   if (subsLockTimeReset === -1) {
     await redis_client.expire(googleUserIdKey, subsCountTtl / 1000);
     subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
@@ -276,11 +275,9 @@ export const actions: Actions = {
 
     await redis_client.incrby(googleUserIdKey, selectedSubscriptions.length);
     
-    // Sprawdź TTL po operacji
     let ttlAfter = await redis_client.ttl(googleUserIdKey);
     console.log(`DELETE ACTION - TTL after incrby: ${ttlAfter}`);
     
-    // Napraw TTL jeśli jest ustawiony na forever (-1)
     if (ttlAfter === -1) {
       await redis_client.expire(googleUserIdKey, subsCountTtl / 1000);
       ttlAfter = await redis_client.ttl(googleUserIdKey);
