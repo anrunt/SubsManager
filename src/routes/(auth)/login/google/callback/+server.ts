@@ -6,7 +6,6 @@ import { decodeIdToken } from "arctic";
 import { error } from "@sveltejs/kit";
 import { sessionLifetime } from "$lib/helper/helper";
 import { getOrCreateSessionForGoogleUser, setSessionCookie } from "$lib/server/session";
-import { redis_client } from "$lib/db/redis";
 
 interface GoogleClaims {
   sub: string;

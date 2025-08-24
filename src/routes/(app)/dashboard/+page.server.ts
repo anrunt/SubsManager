@@ -48,7 +48,6 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string ) 
     }
 
     const lastVideo = items[0];
-    console.log("Last video:", lastVideo.snippet?.publishedAt);
 
     return lastVideo.snippet?.publishedAt ?? null;
   } catch(error) {
@@ -88,12 +87,14 @@ export const load = async (event) => {
 
   const googleUserIdKey = `user:${event.locals.user.googleUserId}`;
   const deletedSubsNumberRawFirst = await redis_client.get(googleUserIdKey);
+  console.log(`LOAD - First get result: ${deletedSubsNumberRawFirst} for user ${event.locals.user.googleUserId}`);
 
   if (deletedSubsNumberRawFirst === null) {
-    await redis_client.set(googleUserIdKey, "0", {
+    const setResult = await redis_client.set(googleUserIdKey, "0", {
       ex: subsCountTtl / 1000,
       nx: true
-    }); 
+    });
+    console.log(`LOAD - Set result: ${setResult} with TTL ${subsCountTtl / 1000}s`);
   }
 
   const deletedSubsNumberRaw = await redis_client.get(googleUserIdKey);
@@ -102,7 +103,15 @@ export const load = async (event) => {
   const remainingSubs = MAX_SELECTION - deletedSubsNumber;
 
   // There we get the user ttl for limit reset
-  const subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
+  let subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
+  console.log(`LOAD - TTL check: ${subsLockTimeReset}`);
+  
+  // Napraw TTL jeśli jest ustawiony na forever (-1)
+  if (subsLockTimeReset === -1) {
+    await redis_client.expire(googleUserIdKey, subsCountTtl / 1000);
+    subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
+    console.log(`LOAD - Fixed TTL from forever to: ${subsLockTimeReset}`);
+  }
 
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({ access_token: accessToken });
@@ -255,14 +264,28 @@ export const actions: Actions = {
     await Promise.allSettled(deleteTasks);
 
     const keyExists = await redis_client.exists(googleUserIdKey);
+    console.log(`DELETE ACTION - Key exists check: ${keyExists} for user ${event.locals.user.googleUserId}`);
+    
     if (keyExists === 0) {
-      await redis_client.set(googleUserIdKey, "0", {
+      const setResult = await redis_client.set(googleUserIdKey, "0", {
         ex: subsCountTtl / 1000,
         nx: true
       });
+      console.log(`DELETE ACTION - Set result: ${setResult} with TTL ${subsCountTtl / 1000}s`);
     }
 
     await redis_client.incrby(googleUserIdKey, selectedSubscriptions.length);
+    
+    // Sprawdź TTL po operacji
+    let ttlAfter = await redis_client.ttl(googleUserIdKey);
+    console.log(`DELETE ACTION - TTL after incrby: ${ttlAfter}`);
+    
+    // Napraw TTL jeśli jest ustawiony na forever (-1)
+    if (ttlAfter === -1) {
+      await redis_client.expire(googleUserIdKey, subsCountTtl / 1000);
+      ttlAfter = await redis_client.ttl(googleUserIdKey);
+      console.log(`DELETE ACTION - Fixed TTL from forever to: ${ttlAfter}`);
+    }
 
     return { success: true };
   }
