@@ -9,7 +9,7 @@ import pLimit from 'p-limit';
 import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
 
-const MAX_SELECTION = 5;
+const MAX_SELECTION = 50;
 
 const deletedSubsNumberSchema = z.coerce.number();
 
