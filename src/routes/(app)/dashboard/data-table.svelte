@@ -1,10 +1,12 @@
 <script lang="ts" generics="TData, TValue">
   import { 
     type ColumnDef,
+    type ColumnFiltersState,
     type PaginationState,
     type RowSelectionState,
     type SortingState,
     getCoreRowModel,
+    getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
   } from "@tanstack/table-core";
@@ -15,6 +17,7 @@
   } from "$lib/components/ui/data-table/index"
   import * as Table from "$lib/components/ui/table/index"
   import { setSubscriptions } from "./subscriptions.svelte";
+  import { Input } from "$lib/components/ui/input/index";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -26,6 +29,7 @@
   let rowSelection = $state<RowSelectionState>({});
   let pagination = $state<PaginationState>({pageIndex: 0, pageSize: 11});
   let sorting = $state<SortingState>([{id: "lastVideoPublishedAt", desc: true}]);
+  let columnFilters = $state<ColumnFiltersState>([]);
 
   const table = createSvelteTable({
     get data() {
@@ -42,6 +46,7 @@
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getRowId: (row) => (row as YoutubeSubsAll).subscriptionId,
     onSortingChange: (updater) => {
       if (typeof updater === "function") {
@@ -64,6 +69,13 @@
         rowSelection = updater;
       }
     },
+    onColumnFiltersChange: (updater) => {
+      if (typeof updater === "function") {
+        columnFilters = updater(columnFilters);
+      } else {
+        columnFilters = updater;
+      }
+    },
     state: {
       get pagination() {
         return pagination;
@@ -73,6 +85,9 @@
       },
       get sorting() {
         return sorting;
+      },
+      get columnFilters() {
+        return columnFilters;
       }
     }
   })
@@ -103,6 +118,19 @@
 </script>
 
 <div>
+  <div class="flex items-center py-4">
+    <Input
+      placeholder="Filter channels..."
+      value={(table.getColumn("channelName")?.getFilterValue() as string) ?? ""}
+      onchange={(e) => {
+        table.getColumn("channelName")?.setFilterValue(e.currentTarget.value);
+      }}
+      oninput={(e) => {
+        table.getColumn("channelName")?.setFilterValue(e.currentTarget.value);
+      }}
+      class="max-w-sm"
+    />
+  </div>
   <div class="rounded-md border">
     <Table.Root class="table-fixed w-full">
       <Table.Header>
