@@ -13,9 +13,11 @@
         SubsManager
       </a>
 
-      <a href="/dashboard" class="text-white text-2xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
-        Dashboard
-      </a>
+      {#if data.user}
+        <a href="/dashboard" class="text-white text-2xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
+          Dashboard
+        </a>
+      {/if}
     </div>
 
     {#if data.user}
@@ -31,7 +33,7 @@
     {:else}
       <a
         href="/login"
-        class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-[#5ea500] hover:bg-[#4a8600] text-white px-4 py-2 rounded-md transition-colors cursor-pointer"
+        class="flex items-center justify-center gap-2 text-md w-32 h-12 bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-2 rounded-md transition-all duration-200 hover:from-green-700 hover:to-green-800 cursor-pointer"
       >
         Login
         <LogIn size={16} />
