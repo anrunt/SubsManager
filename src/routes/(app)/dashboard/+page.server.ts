@@ -74,10 +74,10 @@ export const load = async (event) => {
       
       await updateSessionTokens(sessionId, {
         accessToken,
-        refreshToken, 
+        refreshToken,
         accessTokenExpiresAt
       });
-      
+
       console.log("Access token refreshed proactively");
     } catch (error) {
       console.error("Failed to refresh access token:", error);
@@ -105,7 +105,6 @@ export const load = async (event) => {
   // There we get the user ttl for limit reset
   let subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
   console.log(`LOAD - TTL check: ${subsLockTimeReset}`);
-  
   if (subsLockTimeReset === -1) {
     await redis_client.expire(googleUserIdKey, subsCountTtl / 1000);
     subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
@@ -141,15 +140,15 @@ export const load = async (event) => {
       channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
       channelName: subscription.snippet.title,
       channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
-      subscriptionId: subscription.id
+      subscriptionId: subscription.id,
+      channelId: subscription.snippet.resourceId.channelId
     }));
 
     const limit = pLimit(5);
     const subscriptionsWithLastVideo = await Promise.all(
       transformedSubscriptions.map(sub => {
         return limit(async () => {
-          const channelId = sub.channelLink.split('/').pop()!;
-          const lastVideo = await getLastVideoPublishedAt(accessToken, channelId);
+          const lastVideo = await getLastVideoPublishedAt(accessToken, sub.channelId);
           return {
             ...sub,
             lastVideoPublishedAt: lastVideo
@@ -187,9 +186,8 @@ export const actions: Actions = {
     const subscriptionIdsSchema = z.string().transform((str) => {
       return str.split(',').map(id => id.trim()).filter(id => id);
     });
-    
+
     let selectedSubscriptions: string[] = [];
-    
     try {
       selectedSubscriptions = subscriptionIdsSchema.parse(selectedSubscriptionsRaw);
     } catch (error) {
@@ -229,10 +227,10 @@ export const actions: Actions = {
         
         await updateSessionTokens(sessionId, {
           accessToken,
-          refreshToken, 
+          refreshToken,
           accessTokenExpiresAt
         });
-        
+
         console.log("Access token refreshed in form action");
       } catch (error) {
         console.error("Failed to refresh access token in form action:", error);
@@ -264,7 +262,7 @@ export const actions: Actions = {
 
     const keyExists = await redis_client.exists(googleUserIdKey);
     console.log(`DELETE ACTION - Key exists check: ${keyExists} for user ${event.locals.user.googleUserId}`);
-    
+
     if (keyExists === 0) {
       const setResult = await redis_client.set(googleUserIdKey, "0", {
         ex: subsCountTtl / 1000,
@@ -274,10 +272,9 @@ export const actions: Actions = {
     }
 
     await redis_client.incrby(googleUserIdKey, selectedSubscriptions.length);
-    
+
     let ttlAfter = await redis_client.ttl(googleUserIdKey);
     console.log(`DELETE ACTION - TTL after incrby: ${ttlAfter}`);
-    
     if (ttlAfter === -1) {
       await redis_client.expire(googleUserIdKey, subsCountTtl / 1000);
       ttlAfter = await redis_client.ttl(googleUserIdKey);

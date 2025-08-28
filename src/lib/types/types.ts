@@ -15,6 +15,7 @@ export type YoutubeSubs = {
   channelName: string;
   channelLink: string;
   subscriptionId: string;
+  channelId: string;
 }
 
 // Rozszerzenie typu YoutubeSubs - dodaj tutaj dodatkowe pola
