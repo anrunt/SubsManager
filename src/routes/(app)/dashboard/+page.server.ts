@@ -1,7 +1,7 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import { google, type youtube_v3 } from 'googleapis';
 import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/server/oauth";
-import type { YouTubeSubscription, YoutubeSubs } from '$lib/types/types';
+import type { YouTubeSubscription, YoutubeSubs, YoutubeSubsAll } from '$lib/types/types';
 import { updateSessionTokens } from "$lib/server/session";
 import type { GaxiosResponse } from 'gaxios';
 import { z } from 'zod';
@@ -10,8 +10,42 @@ import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
 
 const MAX_SELECTION = 50;
-
 const deletedSubsNumberSchema = z.coerce.number();
+const subscriptionsSchema = z.array(z.object({
+  channelPicture: z.string(),
+  channelName: z.string(),
+  channelLink: z.string(),
+  subscriptionId: z.string(),
+  channelId: z.string(),
+  lastVideoPublishedAt: z.string().nullable()
+}));
+
+async function processImportedSubscriptionsFile(file: File): Promise<{ success: true; data: YoutubeSubsAll[] } | { success: false; error: string }> {
+  if (file.type !== 'application/json') {
+    return { success: false, error: "File is not a JSON file" };
+  }
+
+  const fileSize = file.size;
+  if (fileSize > 1 * 1024 * 1024) {
+    return { success: false, error: "File size is too large" };
+  }
+
+  let parsedSubscriptions: YoutubeSubsAll[] = [];
+  try {
+    const fileText = await file.text();
+    parsedSubscriptions = JSON.parse(fileText);
+  } catch (error) {
+    return { success: false, error: "Failed to parse file" };
+  }
+
+  // Validate data structure
+  const result = subscriptionsSchema.safeParse(parsedSubscriptions);
+  if (!result.success) {
+    return { success: false, error: "Invalid file format or missing required fields" };
+  }
+
+  return { success: true, data: result.data };
+}
 
 async function getLastVideoPublishedAt(accessToken: string, channelId: string ) {
   const oauth2Client = new google.auth.OAuth2();
@@ -280,6 +314,50 @@ export const actions: Actions = {
       ttlAfter = await redis_client.ttl(googleUserIdKey);
       console.log(`DELETE ACTION - Fixed TTL from forever to: ${ttlAfter}`);
     }
+
+    return { success: true };
+  },
+  importSubscriptions: async (event) => {
+    if (event.locals.user === null) {
+      throw redirect(302, "/login");
+    }
+
+    const data = await event.request.formData();
+    const file = data.get('subscriptions') as File;
+    const currentSubscriptionsRaw = data.get('currentSubscriptions') as string;
+
+    const fileProcessingResult = await processImportedSubscriptionsFile(file);
+    if (!fileProcessingResult.success) {
+      return fail(400, { error: fileProcessingResult.error });
+    }
+
+    if (!currentSubscriptionsRaw) {
+      return fail(400, { error: "Current subscriptions not found" });
+    }
+
+    if (currentSubscriptionsRaw.length > 1_000_000) {
+      return fail(400, { error: "Current subscriptions are empty" });
+    }
+
+    let currentSubscriptionsParsed: YoutubeSubsAll[] = [];
+    try {
+      currentSubscriptionsParsed = JSON.parse(currentSubscriptionsRaw);
+    } catch (error) {
+      return fail(400, { error: "Failed to parse current subscriptions" });
+    }
+
+    const currentSubscriptionsValidationResult = subscriptionsSchema.safeParse(currentSubscriptionsParsed);
+    if (!currentSubscriptionsValidationResult.success) {
+      return fail(400, { error: "Invalid current subscriptions format" });
+    }
+
+    const subscriptions = fileProcessingResult.data;
+    const currentSubscriptions = currentSubscriptionsValidationResult.data;
+
+    const currentSubscriptionsIds = new Set(currentSubscriptions.map(sub => sub.subscriptionId));
+    const toSubscribe = subscriptions.filter(sub => !currentSubscriptionsIds.has(sub.subscriptionId));
+
+    console.log(toSubscribe);
 
     return { success: true };
   }
