@@ -26,10 +26,16 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string ) 
     });
 
     const channel = channelResponse.data.items?.[0];
+    
+    if (!channel) {
+      console.log(`Channel ${channelId} not found - may have been deleted or made private`);
+      return null;
+    }
+
     const uploadsPlaylistId = channel?.contentDetails?.relatedPlaylists?.uploads;
 
     if (!uploadsPlaylistId) {
-      console.log(`Channel ${channelId}, no upload playlist found`)
+      console.log(`Channel ${channelId} has no upload playlist`);
       return null;
     }
 
@@ -43,7 +49,7 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string ) 
     const items = playlistResponse.data.items ?? [];
 
     if (items.length === 0) {
-      console.log(`Channel ${channelId}, no playlist items found`)
+      console.log(`Channel ${channelId} has no videos in upload playlist`)
       return null;
     }
 
@@ -137,12 +143,31 @@ export const load = async (event) => {
 
     console.log('Total subscriptions fetched:', allSubscriptions.length);
 
-    const transformedSubscriptions: YoutubeSubs[] = allSubscriptions.map((subscription) => ({
-      channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
-      channelName: subscription.snippet.title,
-      channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
-      subscriptionId: subscription.id
-    }));
+    // Get recently deleted subscription IDs to filter them out
+    const recentlyDeletedKey = `recently_deleted:${event.locals.user.googleUserId}`;
+    const recentlyDeletedIds = await redis_client.smembers(recentlyDeletedKey);
+
+    const transformedSubscriptions: YoutubeSubs[] = allSubscriptions
+      .filter((subscription) => {
+        const channelId = subscription.snippet.resourceId?.channelId;
+        if (!channelId || !channelId.startsWith('UC')) {
+          console.log(`Filtering out subscription with invalid channel ID: ${channelId} for channel: ${subscription.snippet.title}`);
+          return false;
+        }
+
+        if (recentlyDeletedIds.includes(subscription.id)) {
+          console.log(`Filtering out recently deleted subscription: ${subscription.snippet.title}`);
+          return false;
+        }
+
+        return true;
+      })
+      .map((subscription) => ({
+        channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
+        channelName: subscription.snippet.title,
+        channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
+        subscriptionId: subscription.id
+      }));
 
     const limit = pLimit(5);
     const subscriptionsWithLastVideo = await Promise.all(
@@ -261,6 +286,16 @@ export const actions: Actions = {
     })
 
     await Promise.allSettled(deleteTasks);
+
+    // Track recently deleted subscriptions to prevent race conditions
+    const recentlyDeletedKey = `recently_deleted:${event.locals.user.googleUserId}`;
+    if (selectedSubscriptions.length > 0) {
+      for (const subscriptionId of selectedSubscriptions) {
+        await redis_client.sadd(recentlyDeletedKey, subscriptionId);
+      }
+      await redis_client.expire(recentlyDeletedKey, 30); // Expire after 30 seconds
+      console.log(`Added ${selectedSubscriptions.length} subscription IDs to recently deleted cache`);
+    }
 
     const keyExists = await redis_client.exists(googleUserIdKey);
     console.log(`DELETE ACTION - Key exists check: ${keyExists} for user ${event.locals.user.googleUserId}`);
