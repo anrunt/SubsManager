@@ -10,7 +10,9 @@ import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
 
 const MAX_SELECTION = 50;
+
 const deletedSubsNumberSchema = z.coerce.number();
+
 const subscriptionsSchema = z.array(z.object({
   channelPicture: z.string(),
   channelName: z.string(),
