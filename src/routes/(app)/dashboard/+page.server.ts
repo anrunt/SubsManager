@@ -59,10 +59,10 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string ) 
   } catch(error) {
     const errorObj = error as { status?: number; code?: number; message?: string };
     if (errorObj.status === 404 || errorObj.code === 404) {
-      console.log(`Channel ${channelId} or its playlist not found (404)`);
+      console.log(`Channel ${channelId} playlist not found (404)`);
       return null;
     } else if (errorObj.status === 403 || errorObj.code === 403) {
-      console.log(`Channel ${channelId} is private or access forbidden (403)`);
+      console.log(`Channel ${channelId} playlist is private or access forbidden (403)`);
       return null;
     } else {
       console.error(`Unexpected error fetching data for channel ${channelId}:`, errorObj.message || error);
