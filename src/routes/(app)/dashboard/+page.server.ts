@@ -57,6 +57,7 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string ) 
 
     return lastVideo.snippet?.publishedAt ?? null;
   } catch(error) {
+    // Check if works
     const errorObj = error as { status?: number; code?: number; message?: string };
     if (errorObj.status === 404 || errorObj.code === 404) {
       console.log(`Channel ${channelId} or its playlist not found (404) - likely deleted during processing`);
