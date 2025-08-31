@@ -57,10 +57,9 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string ) 
 
     return lastVideo.snippet?.publishedAt ?? null;
   } catch(error) {
-    // Check if works
     const errorObj = error as { status?: number; code?: number; message?: string };
     if (errorObj.status === 404 || errorObj.code === 404) {
-      console.log(`Channel ${channelId} or its playlist not found (404) - likely deleted during processing`);
+      console.log(`Channel ${channelId} or its playlist not found (404)`);
       return null;
     } else if (errorObj.status === 403 || errorObj.code === 403) {
       console.log(`Channel ${channelId} is private or access forbidden (403)`);
@@ -154,24 +153,24 @@ export const load = async (event) => {
     console.log('Total subscriptions fetched:', allSubscriptions.length);
 
     // Get recently deleted subscription IDs to filter them out
-    const recentlyDeletedKey = `recently_deleted:${event.locals.user.googleUserId}`;
-    const recentlyDeletedIds = await redis_client.smembers(recentlyDeletedKey);
+//    const recentlyDeletedKey = `recently_deleted:${event.locals.user.googleUserId}`;
+//    const recentlyDeletedIds = await redis_client.smembers(recentlyDeletedKey);
 
     const transformedSubscriptions: YoutubeSubs[] = allSubscriptions
-      .filter((subscription) => {
-        const channelId = subscription.snippet.resourceId?.channelId;
-        if (!channelId || !channelId.startsWith('UC')) {
-          console.log(`Filtering out subscription with invalid channel ID: ${channelId} for channel: ${subscription.snippet.title}`);
-          return false;
-        }
-
-        if (recentlyDeletedIds.includes(subscription.id)) {
-          console.log(`Filtering out recently deleted subscription: ${subscription.snippet.title}`);
-          return false;
-        }
-
-        return true;
-      })
+//      .filter((subscription) => {
+//        const channelId = subscription.snippet.resourceId?.channelId;
+//        if (!channelId || !channelId.startsWith('UC')) {
+//          console.log(`Filtering out subscription with invalid channel ID: ${channelId} for channel: ${subscription.snippet.title}`);
+//          return false;
+//        }
+//
+//        if (recentlyDeletedIds.includes(subscription.id)) {
+//          console.log(`Filtering out recently deleted subscription: ${subscription.snippet.title}`);
+//          return false;
+//        }
+//
+//        return true;
+//      })
       .map((subscription) => ({
         channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
         channelName: subscription.snippet.title,
@@ -297,15 +296,14 @@ export const actions: Actions = {
 
     await Promise.allSettled(deleteTasks);
 
-    // Track recently deleted subscriptions to prevent race conditions
-    const recentlyDeletedKey = `recently_deleted:${event.locals.user.googleUserId}`;
-    if (selectedSubscriptions.length > 0) {
-      for (const subscriptionId of selectedSubscriptions) {
-        await redis_client.sadd(recentlyDeletedKey, subscriptionId);
-      }
-      await redis_client.expire(recentlyDeletedKey, 30); // Expire after 30 seconds
-      console.log(`Added ${selectedSubscriptions.length} subscription IDs to recently deleted cache`);
-    }
+//    const recentlyDeletedKey = `recently_deleted:${event.locals.user.googleUserId}`;
+//    if (selectedSubscriptions.length > 0) {
+//      for (const subscriptionId of selectedSubscriptions) {
+//        await redis_client.sadd(recentlyDeletedKey, subscriptionId);
+//      }
+//      await redis_client.expire(recentlyDeletedKey, 30); // Expire after 30 seconds
+//      console.log(`Added ${selectedSubscriptions.length} subscription IDs to recently deleted cache`);
+//    }
 
     const keyExists = await redis_client.exists(googleUserIdKey);
     console.log(`DELETE ACTION - Key exists check: ${keyExists} for user ${event.locals.user.googleUserId}`);
