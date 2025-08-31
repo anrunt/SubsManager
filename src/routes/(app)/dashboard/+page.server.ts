@@ -26,10 +26,16 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string ) 
     });
 
     const channel = channelResponse.data.items?.[0];
+    
+    if (!channel) {
+      console.log(`Channel ${channelId} not found - may have been deleted or made private`);
+      return null;
+    }
+
     const uploadsPlaylistId = channel?.contentDetails?.relatedPlaylists?.uploads;
 
     if (!uploadsPlaylistId) {
-      console.log(`Channel ${channelId}, no upload playlist found`)
+      console.log(`Channel ${channelId} has no upload playlist`);
       return null;
     }
 
@@ -43,7 +49,7 @@ async function getLastVideoPublishedAt(accessToken: string, channelId: string ) 
     const items = playlistResponse.data.items ?? [];
 
     if (items.length === 0) {
-      console.log(`Channel ${channelId}, no playlist items found`)
+      console.log(`Channel ${channelId} has no videos in upload playlist`)
       return null;
     }
 
@@ -146,12 +152,13 @@ export const load = async (event) => {
 
     console.log('Total subscriptions fetched:', allSubscriptions.length);
 
-    const transformedSubscriptions: YoutubeSubs[] = allSubscriptions.map((subscription) => ({
-      channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
-      channelName: subscription.snippet.title,
-      channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
-      subscriptionId: subscription.id
-    }));
+    const transformedSubscriptions: YoutubeSubs[] = allSubscriptions
+      .map((subscription) => ({
+        channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
+        channelName: subscription.snippet.title,
+        channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
+        subscriptionId: subscription.id
+      }));
 
     const limit = pLimit(5);
     const subscriptionsWithLastVideo = await Promise.all(
@@ -295,3 +302,4 @@ export const actions: Actions = {
 
     return { success: true };
   }
+}
