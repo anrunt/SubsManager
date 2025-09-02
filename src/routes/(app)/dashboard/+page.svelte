@@ -74,8 +74,8 @@
             return async ({result}) => {
               isDeleting = false;
               if (result.type === "success") {
-                await invalidateAll();
                 dialogOpen = false;
+                await invalidateAll();
               }
             }
           }}>
