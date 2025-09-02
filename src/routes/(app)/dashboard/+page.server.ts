@@ -157,15 +157,15 @@ export const load = async (event) => {
         channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
         channelName: subscription.snippet.title,
         channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
+        channelId: subscription.snippet.resourceId.channelId,
         subscriptionId: subscription.id
       }));
 
-    const limit = pLimit(5);
+    const limit = pLimit(15);
     const subscriptionsWithLastVideo = await Promise.all(
       transformedSubscriptions.map(sub => {
         return limit(async () => {
-          const channelId = sub.channelLink.split('/').pop()!;
-          const lastVideo = await getLastVideoPublishedAt(accessToken, channelId);
+          const lastVideo = await getLastVideoPublishedAt(accessToken, sub.channelId);
           return {
             ...sub,
             lastVideoPublishedAt: lastVideo
@@ -259,7 +259,7 @@ export const actions: Actions = {
     const oauth2Client = new google.auth.OAuth2();
     oauth2Client.setCredentials({ access_token: accessToken });
 
-    const limit = pLimit(5);
+    const limit = pLimit(15);
 
     const deleteTasks = selectedSubscriptions.map((id) => {
       return limit(async () => {

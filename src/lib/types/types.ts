@@ -14,6 +14,7 @@ export type YoutubeSubs = {
   channelPicture: string;
   channelName: string;
   channelLink: string;
+  channelId: string;
   subscriptionId: string;
 }
 
