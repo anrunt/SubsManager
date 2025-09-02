@@ -165,11 +165,17 @@ export const load = async (event) => {
     const subscriptionsWithLastVideo = await Promise.all(
       transformedSubscriptions.map(sub => {
         return limit(async () => {
-          const lastVideo = await getLastVideoPublishedAt(accessToken, sub.channelId);
-          return {
-            ...sub,
-            lastVideoPublishedAt: lastVideo
-          };
+          try {
+            const lastVideo = await getLastVideoPublishedAt(accessToken, sub.channelId);
+            return {
+              ...sub,
+              lastVideoPublishedAt: lastVideo
+            };
+          } catch (error: any) {
+            if (error.status === 429 || error.code === 429) {
+              console.log("Rate-limited");
+            }
+          }
         })
       })
     )
@@ -269,7 +275,6 @@ export const actions: Actions = {
             auth: oauth2Client,
           });
           console.log(`Deleted ${id}`);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
           console.error(`Error in deleting ${id}, err mess: ${err}`)
         }
