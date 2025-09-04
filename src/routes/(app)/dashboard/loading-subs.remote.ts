@@ -130,6 +130,9 @@ export const getSubs = query(async () => {
     subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
     console.log(`LOAD - Fixed TTL from forever to: ${subsLockTimeReset}`);
   }
+
+
+
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({ access_token: accessToken });
 
@@ -164,6 +167,21 @@ export const getSubs = query(async () => {
         subscriptionId: subscription.id
       }));
 
+    
+    // Here we check if there is some data cached, if yes we use this cache if not we proceed to make api calls to youtube
+    const cacheName2 = `cache:${locals.user.googleUserId}`;
+    const cachedSubs = await redis_client.hgetall(cacheName2);
+
+    if (cachedSubs !== null) {
+      // Get the lastVideoDates from cache and return data
+
+      // Here we put cache data in redis
+  //    const cacheName = `cache:${locals.user.googleUserId}`;
+  //    const lastVideoDateCache = Object.fromEntries(subscriptionsWithLastVideo.map(sub => [sub.channelId, sub.lastVideoPublishedAt]));
+  //    await redis_client.hset(cacheName, lastVideoDateCache);
+  //    await redis_client.expire(cacheName, 7200); // 2 hours
+    }
+
     const limit = pLimit(15);
     const subscriptionsWithLastVideo = await Promise.all(
       transformedSubscriptions.map(sub => {
@@ -186,6 +204,8 @@ export const getSubs = query(async () => {
         })
       })
     )
+
+
 
     return {
       subscriptions: subscriptionsWithLastVideo,

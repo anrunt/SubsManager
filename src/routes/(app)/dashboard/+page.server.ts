@@ -126,6 +126,8 @@ export const actions: Actions = {
       console.log(`DELETE ACTION - Fixed TTL from forever to: ${ttlAfter}`);
     }
 
+    // Check if cache exists and if yes, delete the deleted subs from it.
+
     return { success: true };
   }
 }
