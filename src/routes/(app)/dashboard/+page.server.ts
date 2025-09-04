@@ -75,126 +75,130 @@ export const load = async (event) => {
   if (event.locals.user === null) {
     throw redirect(302, "/login");
   }
-
-  let { accessToken, refreshToken, accessTokenExpiresAt } = event.locals.user;
-  const sessionId = event.cookies.get("session")!;
-
-  if (isTokenExpired(accessTokenExpiresAt)) {
-    try {
-      console.log("Refreshing acces token inside load function")
-      const newTokens = await refreshAccessTokenWithExpiry(refreshToken);
-      accessToken = newTokens.accessToken;
-      refreshToken = newTokens.refreshToken;
-      accessTokenExpiresAt = newTokens.expiresAt;
-      
-      await updateSessionTokens(sessionId, {
-        accessToken,
-        refreshToken, 
-        accessTokenExpiresAt
-      });
-      
-      console.log("Access token refreshed proactively");
-    } catch (error) {
-      console.error("Failed to refresh access token:", error);
-      throw redirect(302, "/login");
-    }
-  }
-
-  const googleUserIdKey = `user:${event.locals.user.googleUserId}`;
-  const deletedSubsNumberRawFirst = await redis_client.get(googleUserIdKey);
-  console.log(`LOAD - First get result: ${deletedSubsNumberRawFirst} for user ${event.locals.user.googleUserId}`);
-
-  if (deletedSubsNumberRawFirst === null) {
-    const setResult = await redis_client.set(googleUserIdKey, "0", {
-      ex: subsCountTtl / 1000,
-      nx: true
-    });
-    console.log(`LOAD - Set result: ${setResult} with TTL ${subsCountTtl / 1000}s`);
-  }
-
-  const deletedSubsNumberRaw = await redis_client.get(googleUserIdKey);
-  const deletedSubsNumber = deletedSubsNumberSchema.parse(deletedSubsNumberRaw);
-
-  const remainingSubs = MAX_SELECTION - deletedSubsNumber;
-
-  // There we get the user ttl for limit reset
-  let subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
-  console.log(`LOAD - TTL check: ${subsLockTimeReset}`);
-  
-  if (subsLockTimeReset === -1) {
-    await redis_client.expire(googleUserIdKey, subsCountTtl / 1000);
-    subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
-    console.log(`LOAD - Fixed TTL from forever to: ${subsLockTimeReset}`);
-  }
-
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({ access_token: accessToken });
-
-  try {
-    let allSubscriptions: YouTubeSubscription[] = [];
-    let nextPageToken: string | undefined = undefined;
-
-    do {
-      const response: GaxiosResponse<youtube_v3.Schema$SubscriptionListResponse> = await google.youtube('v3').subscriptions.list({
-        auth: oauth2Client,
-        part: ['snippet'],
-        mine: true,
-        maxResults: 50,
-        pageToken: nextPageToken
-      });
-
-      if (response.data.items) {
-        allSubscriptions = allSubscriptions.concat(response.data.items as YouTubeSubscription[]);
-      }
-      nextPageToken = response.data.nextPageToken || undefined;
-
-    } while (nextPageToken);
-
-    console.log('Total subscriptions fetched:', allSubscriptions.length);
-
-    const transformedSubscriptions: YoutubeSubs[] = allSubscriptions
-      .map((subscription) => ({
-        channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
-        channelName: subscription.snippet.title,
-        channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
-        channelId: subscription.snippet.resourceId.channelId,
-        subscriptionId: subscription.id
-      }));
-
-    const limit = pLimit(15);
-    const subscriptionsWithLastVideo = await Promise.all(
-      transformedSubscriptions.map(sub => {
-        return limit(async () => {
-          try {
-            const lastVideo = await getLastVideoPublishedAt(accessToken, sub.channelId);
-            return {
-              ...sub,
-              lastVideoPublishedAt: lastVideo
-            };
-          } catch (error: any) {
-            if (error.status === 429 || error.code === 429) {
-              console.log("Rate-limited");
-            }
-          }
-        })
-      })
-    )
-
-    return {
-      subscriptions: subscriptionsWithLastVideo,
-      allSubscriptions: allSubscriptions,
-      remainingSubs: remainingSubs,
-      subsLockTimeReset: subsLockTimeReset
-    };
-  } catch (error) {
-    console.error("API call failed:", error);
-    return {
-      subscriptions: [],
-      allSubscriptions: [],
-      remainingSubs: 0,
-      subsLockTimeReset: -1
-    };
-  }
+//
+//  let { accessToken, refreshToken, accessTokenExpiresAt } = event.locals.user;
+//  const sessionId = event.cookies.get("session")!;
+//
+//  if (isTokenExpired(accessTokenExpiresAt)) {
+//    try {
+//      console.log("Refreshing acces token inside load function")
+//      const newTokens = await refreshAccessTokenWithExpiry(refreshToken);
+//      accessToken = newTokens.accessToken;
+//      refreshToken = newTokens.refreshToken;
+//      accessTokenExpiresAt = newTokens.expiresAt;
+//      
+//      await updateSessionTokens(sessionId, {
+//        accessToken,
+//        refreshToken, 
+//        accessTokenExpiresAt
+//      });
+//      
+//      console.log("Access token refreshed proactively");
+//    } catch (error) {
+//      console.error("Failed to refresh access token:", error);
+//      throw redirect(302, "/login");
+//    }
+//  }
+//
+//  const googleUserIdKey = `user:${event.locals.user.googleUserId}`;
+//  const deletedSubsNumberRawFirst = await redis_client.get(googleUserIdKey);
+//  console.log(`LOAD - First get result: ${deletedSubsNumberRawFirst} for user ${event.locals.user.googleUserId}`);
+//
+//  if (deletedSubsNumberRawFirst === null) {
+//    const setResult = await redis_client.set(googleUserIdKey, "0", {
+//      ex: subsCountTtl / 1000,
+//      nx: true
+//    });
+//    console.log(`LOAD - Set result: ${setResult} with TTL ${subsCountTtl / 1000}s`);
+//  }
+//
+//  const deletedSubsNumberRaw = await redis_client.get(googleUserIdKey);
+//  const deletedSubsNumber = deletedSubsNumberSchema.parse(deletedSubsNumberRaw);
+//
+//  const remainingSubs = MAX_SELECTION - deletedSubsNumber;
+//
+//  // There we get the user ttl for limit reset
+//  let subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
+//  console.log(`LOAD - TTL check: ${subsLockTimeReset}`);
+//  
+//  if (subsLockTimeReset === -1) {
+//    await redis_client.expire(googleUserIdKey, subsCountTtl / 1000);
+//    subsLockTimeReset = await redis_client.ttl(googleUserIdKey);
+//    console.log(`LOAD - Fixed TTL from forever to: ${subsLockTimeReset}`);
+//  }
+//
+//  const oauth2Client = new google.auth.OAuth2();
+//  oauth2Client.setCredentials({ access_token: accessToken });
+//
+//  try {
+//    let allSubscriptions: YouTubeSubscription[] = [];
+//    let nextPageToken: string | undefined = undefined;
+//
+//    do {
+//      const response: GaxiosResponse<youtube_v3.Schema$SubscriptionListResponse> = await google.youtube('v3').subscriptions.list({
+//        auth: oauth2Client,
+//        part: ['snippet'],
+//        mine: true,
+//        maxResults: 50,
+//        pageToken: nextPageToken
+//      });
+//
+//      if (response.data.items) {
+//        allSubscriptions = allSubscriptions.concat(response.data.items as YouTubeSubscription[]);
+//      }
+//      nextPageToken = response.data.nextPageToken || undefined;
+//
+//    } while (nextPageToken);
+//
+//    console.log('Total subscriptions fetched:', allSubscriptions.length);
+//
+//    const transformedSubscriptions: YoutubeSubs[] = allSubscriptions
+//      .map((subscription) => ({
+//        channelPicture: subscription.snippet.thumbnails.medium?.url || subscription.snippet.thumbnails.default?.url || '',
+//        channelName: subscription.snippet.title,
+//        channelLink: `https://www.youtube.com/channel/${subscription.snippet.resourceId.channelId}`,
+//        channelId: subscription.snippet.resourceId.channelId,
+//        subscriptionId: subscription.id
+//      }));
+//
+//    const limit = pLimit(15);
+//    const subscriptionsWithLastVideo = await Promise.all(
+//      transformedSubscriptions.map(sub => {
+//        return limit(async () => {
+//          try {
+//            const lastVideo = await getLastVideoPublishedAt(accessToken, sub.channelId);
+//            return {
+//              ...sub,
+//              lastVideoPublishedAt: lastVideo
+//            };
+//          } catch (error: any) {
+//            if (error.status === 429 || error.code === 429) {
+//              console.log("Rate-limited");
+//            }
+//            return {
+//              ...sub,
+//              lastVideoPublishedAt: null
+//            }
+//          }
+//        })
+//      })
+//    )
+//
+//    return {
+//      subscriptions: subscriptionsWithLastVideo,
+//      allSubscriptions: allSubscriptions,
+//      remainingSubs: remainingSubs,
+//      subsLockTimeReset: subsLockTimeReset
+//    };
+//  } catch (error) {
+//    console.error("API call failed:", error);
+//    return {
+//      subscriptions: [],
+//      allSubscriptions: [],
+//      remainingSubs: 0,
+//      subsLockTimeReset: -1
+//    };
+//  }
 };
 
 export const actions: Actions = {
