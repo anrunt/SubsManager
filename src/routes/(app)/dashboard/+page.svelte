@@ -9,8 +9,6 @@
   import { invalidateAll } from "$app/navigation";
   import { getSubs } from "./loading-subs.remote"
 
-//  let { data } = $props();
-
   const data = getSubs();
 
   let dialogOpen = $state(false);
@@ -18,11 +16,6 @@
 
   let selectedSubscriptions = $derived(getSubscriptions());
   let selectedSubscriptionsIds = $derived(selectedSubscriptions.map((value) => value.subscriptionId));
-
-//  let subsLockTimeReset = data.subsLockTimeReset;
-
-//  let hours = Math.floor(subsLockTimeReset / 3600);
-//  let minutes = Math.floor((subsLockTimeReset % 3600) / 60);
 
   $effect(() => {
     if (data.current) {
@@ -38,14 +31,20 @@
 </script>
 
 <svelte:boundary>
-  {#snippet pending()}
-    <p>Loading...</p> 
-  {/snippet}
-
   {#if data.error}
     <p>Error: {data.error}</p>
   {:else if data.loading}
-    <p>Loading...</p>
+    <div class="min-h-screen flex flex-col items-center justify-center gap-4 text-center bg-black">
+      <div class="relative">
+        <div class="w-16 h-16 border-4 border-white rounded-full animate-pulse"></div>
+        <div class="absolute inset-0 w-16 h-16 border-4 border-t-blue-400 rounded-full animate-spin"></div>
+      </div>
+      
+      <div class="space-y-2 animate-fade-in">
+        <h2 class="text-2xl font-bold text-white">Loading your subscriptions</h2>
+        <p class="text-gray-400 max-w-md">We're gathering your YouTube subscriptions. This may take a moment.</p>
+      </div>
+    </div>
   {:else if data.current}
     {@const currentData = data.current}
     {@const subsLockTimeReset = currentData.subsLockTimeReset}
