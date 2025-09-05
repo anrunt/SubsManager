@@ -198,12 +198,39 @@ export const getSubs = query(async () => {
         console.log("Missing Subscriptions: ", missingSubscriptions);
 
         // Get the lastVideoDate
-
+        const limit = pLimit(15);
+        const subscriptionsWithLastVideo = await Promise.all(
+          missingSubscriptions.map(sub => {
+            return limit(async () => {
+              try {
+                const lastVideo = await getLastVideoPublishedAt(accessToken, sub.channelId);
+                return {
+                  ...sub,
+                  lastVideoPublishedAt: lastVideo
+                };
+              } catch (error: any) {
+                if (error.status === 429 || error.code === 429) {
+                  console.log("Rate-limited");
+                }
+                return {
+                  ...sub,
+                  lastVideoPublishedAt: null
+                }
+              }
+            })
+          })
+        )
         // Update the cache
+        const cacheName = `cache:${locals.user.googleUserId}`;
+        const lastVideoDateCache = Object.fromEntries(subscriptionsWithLastVideo.map(sub => [sub.subscriptionId, sub.lastVideoPublishedAt]));
+        await redis_client.hset(cacheName, lastVideoDateCache);
+        await redis_client.expire(cacheName, 7200); // 2 hours
 
         // Update the map
+        subscriptionsWithLastVideo.map(sub => {
+          lastVideoDateMap.set(sub.subscriptionId, sub.lastVideoPublishedAt);
+        })
       }
-
 
       const subscriptionsWithLastVideo = transformedSubscriptions.map(sub => {
         const lastVideoDate = lastVideoDateMap.get(sub.subscriptionId) || null;
