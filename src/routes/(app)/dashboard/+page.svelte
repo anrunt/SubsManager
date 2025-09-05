@@ -32,7 +32,7 @@
 
 <svelte:boundary>
   {#if data.error}
-    <p>Error: {data.error}</p>
+    <p class="text-white">Error: {data.error}</p>
   {:else if data.loading}
     <div class="min-h-screen flex flex-col items-center justify-center gap-4 text-center bg-black">
       <div class="relative">

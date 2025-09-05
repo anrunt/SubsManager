@@ -3,7 +3,7 @@ import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
 import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/server/oauth";
 import { updateSessionTokens } from "$lib/server/session";
-import type { YoutubeSubs, YouTubeSubscription } from "$lib/types/types";
+import type { cachedDates, YoutubeSubs, YouTubeSubscription } from "$lib/types/types";
 import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import type { GaxiosResponse } from 'gaxios';
@@ -132,7 +132,6 @@ export const getSubs = query(async () => {
   }
 
 
-
   const oauth2Client = new google.auth.OAuth2();
   oauth2Client.setCredentials({ access_token: accessToken });
 
@@ -166,22 +165,37 @@ export const getSubs = query(async () => {
         channelId: subscription.snippet.resourceId.channelId,
         subscriptionId: subscription.id
       }));
-
     
     // Here we check if there is some data cached, if yes we use this cache if not we proceed to make api calls to youtube
     const cacheName2 = `cache:${locals.user.googleUserId}`;
-    const cachedSubs = await redis_client.hgetall(cacheName2);
+    const cachedSubs = await redis_client.hgetall(cacheName2) as unknown as cachedDates;
+    console.log(cachedSubs);
 
     if (cachedSubs !== null) {
+      console.log("Dane z redis")
       // Get the lastVideoDates from cache and return data
+      // Check if the redis cache === youtube subs from api call, if not we have to make additional api call for only that umatching sub 
+      // and then we add it to the cache.
+      const lastVideoDateMap: Map<string, string | null> = new Map(Object.entries(cachedSubs));
 
-      // Here we put cache data in redis
-  //    const cacheName = `cache:${locals.user.googleUserId}`;
-  //    const lastVideoDateCache = Object.fromEntries(subscriptionsWithLastVideo.map(sub => [sub.channelId, sub.lastVideoPublishedAt]));
-  //    await redis_client.hset(cacheName, lastVideoDateCache);
-  //    await redis_client.expire(cacheName, 7200); // 2 hours
+      const subscriptionsWithLastVideo = transformedSubscriptions.map(sub => {
+        const lastVideoDate = lastVideoDateMap.get(sub.subscriptionId) || null;
+        return {
+          ...sub,
+          lastVideoPublishedAt: lastVideoDate
+        }
+      })
+
+      return {
+        subscriptions: subscriptionsWithLastVideo,
+        allSubscriptions: allSubscriptions,
+        remainingSubs: remainingSubs,
+        subsLockTimeReset: subsLockTimeReset
+      };
     }
 
+
+    console.log("Wykonuje api calla po videoDate")
     const limit = pLimit(15);
     const subscriptionsWithLastVideo = await Promise.all(
       transformedSubscriptions.map(sub => {
@@ -205,7 +219,11 @@ export const getSubs = query(async () => {
       })
     )
 
-
+    // Here we put cache data in redis
+    const cacheName = `cache:${locals.user.googleUserId}`;
+    const lastVideoDateCache = Object.fromEntries(subscriptionsWithLastVideo.map(sub => [sub.subscriptionId, sub.lastVideoPublishedAt]));
+    await redis_client.hset(cacheName, lastVideoDateCache);
+    await redis_client.expire(cacheName, 7200); // 2 hours
 
     return {
       subscriptions: subscriptionsWithLastVideo,

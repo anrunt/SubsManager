@@ -23,6 +23,10 @@ export type YoutubeSubsAll = YoutubeSubs & {
   lastVideoPublishedAt: string | null;
 }
 
+export type cachedDates = {
+  subscriptionId: string;
+}
+
 export type YouTubeSubscription = {
   kind: string;
   etag: string;

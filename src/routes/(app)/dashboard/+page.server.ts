@@ -6,6 +6,7 @@ import { z } from 'zod';
 import pLimit from 'p-limit';
 import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
+import type { cachedDates } from "$lib/types/types";
 
 const MAX_SELECTION = 50;
 
@@ -127,6 +128,13 @@ export const actions: Actions = {
     }
 
     // Check if cache exists and if yes, delete the deleted subs from it.
+    const cacheName = `cache:${event.locals.user.googleUserId}`;
+    const cachedSubs = await redis_client.hgetall(cacheName) as unknown as cachedDates;
+
+    if (cachedSubs !== null) {
+      await redis_client.hdel(cacheName, ...selectedSubscriptions);
+      console.log("Deleted selected subs from cache");
+    }
 
     return { success: true };
   }
