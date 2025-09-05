@@ -3,7 +3,7 @@ import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
 import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/server/oauth";
 import { updateSessionTokens } from "$lib/server/session";
-import type { cachedDates, YoutubeSubs, YouTubeSubscription } from "$lib/types/types";
+import type { cachedDates, cachedDatesHelper, YoutubeSubs, YouTubeSubscription } from "$lib/types/types";
 import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import type { GaxiosResponse } from 'gaxios';
@@ -176,7 +176,34 @@ export const getSubs = query(async () => {
       // Get the lastVideoDates from cache and return data
       // Check if the redis cache === youtube subs from api call, if not we have to make additional api call for only that umatching sub 
       // and then we add it to the cache.
+
       const lastVideoDateMap: Map<string, string | null> = new Map(Object.entries(cachedSubs));
+
+      if (lastVideoDateMap.size !== transformedSubscriptions.length) {
+        // Here we check which sub is missing in lastVideoDateMap
+        const missingSubscriptions: cachedDatesHelper[] = [];
+
+        transformedSubscriptions.map(sub => {
+          const missingSubInfo = lastVideoDateMap.get(sub.subscriptionId);
+
+          if (missingSubInfo === undefined) {
+            const newRecord: cachedDatesHelper = {
+              subscriptionId: sub.subscriptionId,
+              channelId: sub.channelId
+            }
+            missingSubscriptions.push(newRecord);
+          }
+        })
+
+        console.log("Missing Subscriptions: ", missingSubscriptions);
+
+        // Get the lastVideoDate
+
+        // Update the cache
+
+        // Update the map
+      }
+
 
       const subscriptionsWithLastVideo = transformedSubscriptions.map(sub => {
         const lastVideoDate = lastVideoDateMap.get(sub.subscriptionId) || null;
