@@ -1,12 +1,12 @@
-import type { YoutubeSubs } from "$lib/types/types";
+import type { YoutubeSubsAll } from "$lib/types/types";
 
-let subscriptions = $state<YoutubeSubs[]>([]);
+let subscriptions = $state<YoutubeSubsAll[]>([]);
 
 export function getSubscriptions() {
   return subscriptions;
 }
 
-export function setSubscriptions(value: YoutubeSubs[]) {
+export function setSubscriptions(value: YoutubeSubsAll[]) {
   subscriptions = value;
 }
 

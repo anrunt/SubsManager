@@ -14,12 +14,21 @@ export type YoutubeSubs = {
   channelPicture: string;
   channelName: string;
   channelLink: string;
+  channelId: string;
   subscriptionId: string;
 }
 
 // Rozszerzenie typu YoutubeSubs - dodaj tutaj dodatkowe pola
 export type YoutubeSubsAll = YoutubeSubs & {
   lastVideoPublishedAt: string | null;
+}
+
+export type cachedDates = {
+  subscriptionId: string;
+}
+
+export type cachedDatesHelper = cachedDates & {
+  channelId: string;
 }
 
 export type YouTubeSubscription = {
