@@ -19,6 +19,18 @@
     </div>
 
     <div>
+      <h2 class="text-2xl font-semibold mb-3">Google API Compliance</h2>
+      <p>
+        Our use of information received from Google APIs adheres to 
+        <a href="https://developers.google.com/terms/api-services-user-data-policy" 
+           class="text-blue-600 underline" target="_blank">
+          Google API Services User Data Policy
+        </a>, including the Limited Use requirements. We only use your Google data 
+        to provide the specific features visible in our application interface.
+      </p>
+    </div>
+
+    <div>
       <h2 class="text-2xl font-semibold mb-3">What data we access from Google</h2>
       <ul class="list-disc pl-6 space-y-1">
         <li>Google Account basic profile: Google user ID and display name (username).</li>
@@ -31,6 +43,8 @@
       <h2 class="text-2xl font-semibold mb-3">How we use the data</h2>
       <ul class="list-disc pl-6 space-y-1">
         <li>Authenticate you and maintain your session.</li>
+        <li>Data is used solely to provide user-facing features visible in the application interface.</li>
+        <li>No human reads your data unless you explicitly request support assistance.</li>
         <li>Retrieve your subscribed channels to display and allow bulk removal upon your action.</li>
         <li>Refresh access tokens when needed to complete requested actions.</li>
       </ul>
@@ -71,6 +85,16 @@
     </div>
 
     <div>
+      <h2 class="text-2xl font-semibold mb-3">Your Rights</h2>
+      <ul class="list-disc pl-6 space-y-1">
+        <li>Request a copy of your stored data</li>
+        <li>Request correction of inaccurate data</li>
+        <li>Request immediate deletion of your data</li>
+        <li>Withdraw consent at any time through Google Account settings</li>
+      </ul>
+    </div>
+
+    <div>
       <h2 class="text-2xl font-semibold mb-3">User controls</h2>
       <ul class="list-disc pl-6 space-y-1">
         <li>Revoke access from your Google Account at any time in Google Account settings.</li>
@@ -85,6 +109,11 @@
         We take reasonable measures to protect your data during transit and at rest. OAuth
         tokens are stored server-side and never embedded in client code. Cookies are set as
         httpOnly where applicable.
+      </p>
+      <p>
+        We implement industry-standard security measures including HTTPS encryption, 
+        secure token storage, and regular security updates. Access to your data is 
+        restricted to automated processes necessary for app functionality.
       </p>
     </div>
 
