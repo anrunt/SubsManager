@@ -1,6 +1,6 @@
 <script lang="ts">
   const appName = "SubsManager";
-  const contactEmail = "movesubsapp@gmail.com";
+  const contactEmail = "managesubsapp@gmail.com";
 </script>
 
 <section class="max-w-3xl mx-auto px-6 py-12 text-foreground">
