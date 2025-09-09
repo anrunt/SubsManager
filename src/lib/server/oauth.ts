@@ -9,7 +9,7 @@ export const google = new Google(
   process.env.REDIRECT_URI!
 );
 
-export const scopes = ["openid", "profile", "https://www.googleapis.com/auth/youtube.force-ssl"];
+export const scopes = ["openid", "profile", "https://www.googleapis.com/auth/youtube"];
 
 export function isTokenExpired(expiresAt: number): boolean {
   const now = Math.floor(Date.now() / 1000);

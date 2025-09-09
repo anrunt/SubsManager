@@ -10,7 +10,7 @@
     
     <p class="max-w-3xl mx-auto text-balance text-muted-foreground leading-relaxed text-lg md:text-xl">
       A fast, simple way to clean up your subscriptions. Filter and sort
-      by last video date to spot inactive channels — and remove them easily.
+      by last video date to spot inactive channels and remove them easily.
     </p>
   </div>
 
@@ -39,10 +39,4 @@
       </a>
     </div>
   {/if}
-
-  <div>
-    <p class="text-sm text-muted-foreground/70 font-medium">
-      Still in development — bugs may occur.
-    </p>
-  </div>
 </section>

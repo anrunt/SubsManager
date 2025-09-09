@@ -18,6 +18,10 @@
           Dashboard
         </a>
       {/if}
+
+      <a href="/privacy" class="text-white text-2xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
+        Privacy Policy
+      </a>
     </div>
 
     {#if data.user}
@@ -43,3 +47,12 @@
 </nav>
 
 {@render children()}
+
+<footer class="bg-black border-t border-gray-900 p-4">
+  <div class="mx-0.5 flex items-center justify-between text-sm text-gray-400">
+    <p>© {new Date().getFullYear()} SubsManager</p>
+    <div class="flex items-center gap-4">
+      <a href="/privacy" class="hover:text-gray-200 transition-colors">Privacy Policy</a>
+    </div>
+  </div>
+</footer>

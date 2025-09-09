@@ -34,7 +34,10 @@
     </div>
 
     <div class="text-center text-sm text-gray-500 mt-8">
-      <p>By signing in, you agree to our terms of service</p>
+      <p>
+        By signing in, you agree to our use of Google user data as described in our
+        <a href="/privacy" class="underline">Privacy Policy</a>.
+      </p>
     </div>
   </div>
 </div>
