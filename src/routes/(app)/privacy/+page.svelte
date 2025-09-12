@@ -1,6 +1,9 @@
 <script lang="ts">
   const appName = "SubsManager";
   const contactEmail = "managesubsapp@gmail.com";
+  const youtubeTermsUrl = "https://www.youtube.com/t/terms";
+  const googlePrivacyUrl = "http://www.google.com/policies/privacy";
+  const googleSecuritySettingsUrl = "https://security.google.com/settings/";
 </script>
 
 <section class="max-w-3xl mx-auto px-6 py-12 text-foreground">
@@ -16,6 +19,11 @@
         data is limited to the practices disclosed here and is designed to conform with
         Google's Limited Use requirements.
       </p>
+      <p class="mt-2">
+        This app uses <strong>YouTube API Services</strong>. By using {appName}, you agree to be bound by the
+        <a href={youtubeTermsUrl} class="text-blue-600 underline" target="_blank">YouTube Terms of Service</a>.
+        Please also review the <a href={googlePrivacyUrl} class="text-blue-600 underline" target="_blank">Google Privacy Policy</a>.
+      </p>
     </div>
 
     <div>
@@ -27,6 +35,11 @@
           Google API Services User Data Policy
         </a>, including the Limited Use requirements. We only use your Google data 
         to provide the specific features visible in our application interface.
+      </p>
+      <p class="mt-2">
+        Specifically, {appName} integrates with <strong>YouTube API Services</strong> to access your YouTube
+        subscriptions solely for the purpose of displaying them and allowing you to remove
+        subscriptions at your request.
       </p>
     </div>
 
@@ -79,8 +92,13 @@
       <p>
         Session data is retained for up to 30 days from your last activity and then
         automatically deleted. Subscription cache entries are retained for up to 2 hours
-        and then automatically deleted. You can request deletion of your session data at
-        any time by contacting us or logging out and waiting for expiration.
+        and then automatically deleted. 
+      </p>
+      <p class="mt-2">
+        You can request deletion of your session data at any time by contacting us or logging out and waiting for expiration.
+        To request deletion: send an email to {contactEmail} from the email address
+        associated with your Google Account used in {appName}. We will erase stored session
+        records and tokens within 72 hours and confirm via email when completed.
       </p>
     </div>
 
@@ -97,7 +115,11 @@
     <div>
       <h2 class="text-2xl font-semibold mb-3">User controls</h2>
       <ul class="list-disc pl-6 space-y-1">
-        <li>Revoke access from your Google Account at any time in Google Account settings.</li>
+        <li>
+          Revoke {appName}'s access from your Google Account at any time via the Google security
+          settings page: <a href={googleSecuritySettingsUrl} class="text-blue-600 underline" target="_blank">security.google.com/settings/</a>.
+          You may also review and manage app access at <a href="https://myaccount.google.com/permissions" target="_blank" class="text-blue-600 underline">myaccount.google.com/permissions</a>.
+        </li>
         <li>Log out in the app to end your current session.</li>
         <li>Contact us to request deletion of stored session data earlier than the retention period.</li>
       </ul>
@@ -121,6 +143,10 @@
       <h2 class="text-2xl font-semibold mb-3">Contact</h2>
       <p>
         If you have questions about this policy, contact us at {contactEmail}.
+      </p>
+      <p class="mt-2">
+        See also our <a href="/terms" class="text-blue-600 underline">Terms of Use</a> for additional terms,
+        including your agreement to the YouTube Terms of Service when using {appName}.
       </p>
     </div>
   </div>

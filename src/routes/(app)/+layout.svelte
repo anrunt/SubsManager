@@ -14,13 +14,16 @@
       </a>
 
       {#if data.user}
-        <a href="/dashboard" class="text-white text-2xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
+        <a href="/dashboard" class="text-white text-xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
           Dashboard
         </a>
       {/if}
 
-      <a href="/privacy" class="text-white text-2xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
+      <a href="/privacy" class="text-white text-xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
         Privacy Policy
+      </a>
+      <a href="/terms" class="text-white text-xl font-medium hover:text-gray-300 transition-colors cursor-pointer">
+        Terms of Use
       </a>
     </div>
 
@@ -53,6 +56,7 @@
     <p>© {new Date().getFullYear()} SubsManager</p>
     <div class="flex items-center gap-4">
       <a href="/privacy" class="hover:text-gray-200 transition-colors">Privacy Policy</a>
+      <a href="/terms" class="hover:text-gray-200 transition-colors">Terms of Use</a>
     </div>
   </div>
 </footer>
