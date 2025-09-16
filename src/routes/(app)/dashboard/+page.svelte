@@ -8,6 +8,7 @@
   import * as Table from "$lib/components/ui/table/index.js";
   import { invalidateAll } from "$app/navigation";
   import { getSubs } from "./loading-subs.remote"
+  import { Toaster, toast } from "svelte-sonner";
 
   const data = getSubs();
 
@@ -30,6 +31,7 @@
   });
 </script>
 
+<Toaster richColors theme="dark" position="bottom-center" closeButton/>
 <svelte:boundary>
   {#if data.error}
     <p class="text-white">Error: {data.error}</p>
@@ -97,7 +99,10 @@
                   isDeleting = false;
                   if (result.type === "success") {
                     dialogOpen = false;
+                    toast.success("Subscriptions deleted successfully");
                     await invalidateAll();
+                  } else {
+                    toast.error("Something went wrong");
                   }
                 }
               }}>

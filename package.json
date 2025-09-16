@@ -49,6 +49,7 @@
     "googleapis": "^149.0.0",
     "lucide-svelte": "^0.525.0",
     "p-limit": "^6.2.0",
+    "svelte-sonner": "^1.0.5",
     "tailwindcss": "^4.1.7",
     "zod": "^3.25.75"
   }
