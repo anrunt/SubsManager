@@ -285,8 +285,18 @@ export const getSubs = query(async () => {
       remainingSubs: remainingSubs,
       subsLockTimeReset: subsLockTimeReset
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("API call failed:", error);
+    
+    // Check if error is due to insufficient permissions
+    if (error.status === 403 || error.code === 403) {
+      const errorReason = error.errors?.[0]?.reason;
+      if (errorReason === 'insufficientPermissions') {
+        console.error("User does not have YouTube permissions - redirecting to login");
+        throw redirect(302, "/login?error=youtube_permission_required");
+      }
+    }
+    
     return {
       subscriptions: [],
       allSubscriptions: [],

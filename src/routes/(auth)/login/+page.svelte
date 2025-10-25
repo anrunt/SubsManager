@@ -1,9 +1,46 @@
+<script lang="ts">
+  import { page } from '$app/stores';
+  import { onMount } from 'svelte';
+  
+  let errorMessage = '';
+  
+  onMount(() => {
+    const error = $page.url.searchParams.get('error');
+    if (error === 'youtube_permission_required') {
+      errorMessage = 'YouTube access is required for this application to work. Please grant all requested permissions when logging in.';
+    }
+  });
+</script>
+
 <div class="flex min-h-screen flex-col items-center justify-center bg-black text-white">
   <div class="w-full max-w-md space-y-8 px-4">
 
     <div class="text-center">
       <h1 class="text-4xl font-bold mb-2">Welcome to SubsManager</h1>
       <p class="text-gray-400">Log in to manage your subscriptions</p>
+    </div>
+
+    {#if errorMessage}
+      <div class="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+        <div class="flex items-start">
+          <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+          </svg>
+          <p class="text-sm">{errorMessage}</p>
+        </div>
+      </div>
+    {/if}
+
+    <div class="bg-blue-900/30 border border-blue-500/50 text-blue-200 px-4 py-3 rounded-lg">
+      <div class="flex items-start">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        <div class="text-sm">
+          <p class="font-semibold mb-1">Important:</p>
+          <p>This app requires access to your YouTube data to manage your subscriptions. Please make sure to check all permission boxes when logging in with Google.</p>
+        </div>
+      </div>
     </div>
 
     <div class="mt-8">
