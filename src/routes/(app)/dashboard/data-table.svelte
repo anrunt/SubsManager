@@ -27,7 +27,7 @@
   let { data, columns }: DataTableProps<TData, TValue> = $props()
 
   let rowSelection = $state<RowSelectionState>({});
-  let pagination = $state<PaginationState>({pageIndex: 0, pageSize: 11});
+  let pagination = $state<PaginationState>({pageIndex: 0, pageSize: 10});
   let sorting = $state<SortingState>([{id: "lastVideoPublishedAt", desc: true}]);
   let columnFilters = $state<ColumnFiltersState>([]);
 
