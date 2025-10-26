@@ -2,9 +2,8 @@ import { getRequestEvent, query } from "$app/server";
 import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
 import { isTokenExpired, refreshAccessTokenWithExpiry } from "$lib/server/oauth";
-import { updateSessionTokens } from "$lib/server/session";
+import { updateSessionTokens, deleteSession } from "$lib/server/session";
 import type { cachedDates, cachedDatesHelper, YoutubeSubs, YouTubeSubscription } from "$lib/types/types";
-import { redirect } from "@sveltejs/kit";
 import { z } from "zod";
 import type { GaxiosResponse } from 'gaxios';
 import { google, type youtube_v3 } from 'googleapis';
@@ -76,7 +75,13 @@ export const getSubs = query(async () => {
   const { cookies, locals } = getRequestEvent();
 
   if (locals.user === null) {
-    throw redirect(302, "/login");
+    return {
+      error: "not_authenticated",
+      subscriptions: [],
+      allSubscriptions: [],
+      remainingSubs: 0,
+      subsLockTimeReset: -1
+    };
   }
 
   let { accessToken, refreshToken, accessTokenExpiresAt } = locals.user;
@@ -98,9 +103,27 @@ export const getSubs = query(async () => {
       });
       
       console.log("Access token refreshed proactively");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to refresh access token:", error);
-      throw redirect(302, "/login");
+      
+      if (error?.code === 'invalid_grant') {
+        console.error("Refresh token is invalid or expired - deleting session and user needs to re-authenticate");
+      }
+      
+      try {
+        await deleteSession(sessionId, locals.user.googleUserId);
+        console.log("Invalid session deleted from Redis");
+      } catch (deleteError) {
+        console.error("Failed to delete session:", deleteError);
+      }
+      
+      return {
+        error: "token_refresh_failed",
+        subscriptions: [],
+        allSubscriptions: [],
+        remainingSubs: 0,
+        subsLockTimeReset: -1
+      };
     }
   }
 
@@ -241,6 +264,7 @@ export const getSubs = query(async () => {
       })
 
       return {
+        error: undefined,
         subscriptions: subscriptionsWithLastVideo,
         allSubscriptions: allSubscriptions,
         remainingSubs: remainingSubs,
@@ -280,6 +304,7 @@ export const getSubs = query(async () => {
     await redis_client.expire(cacheName, 7200); // 2 hours
 
     return {
+      error: undefined,
       subscriptions: subscriptionsWithLastVideo,
       allSubscriptions: allSubscriptions,
       remainingSubs: remainingSubs,
@@ -298,6 +323,7 @@ export const getSubs = query(async () => {
     }
     
     return {
+      error: "api_error",
       subscriptions: [],
       allSubscriptions: [],
       remainingSubs: 0,

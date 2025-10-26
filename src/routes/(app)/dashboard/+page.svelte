@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
   import DataTable from "./data-table.svelte";
   import { columns } from "./columns.svelte";
   import { getSubscriptions, setMaxSelection } from "./subscriptions.svelte";
@@ -20,7 +21,11 @@
 
   $effect(() => {
     if (data.current) {
-      setMaxSelection(data.current.remainingSubs);
+      if (data.current.error === "token_refresh_failed" || data.current.error === "not_authenticated") {
+        goto("/login");
+      } else {
+        setMaxSelection(data.current.remainingSubs);
+      }
     }
   });
 
@@ -34,7 +39,12 @@
 <Toaster richColors theme="dark" position="bottom-center" closeButton/>
 <svelte:boundary>
   {#if data.error}
-    <p class="text-white">Error: {data.error}</p>
+    <div class="min-h-screen flex flex-col items-center justify-center gap-4 text-center bg-black">
+      <div class="space-y-4 animate-fade-in">
+        <h2 class="text-2xl font-bold text-red-500">Authentication Error</h2>
+        <p class="text-gray-400 max-w-md">Your session has expired or was revoked. You will be redirected to login again...</p>
+      </div>
+    </div>
   {:else if data.loading}
     <div class="min-h-screen flex flex-col items-center justify-center gap-4 text-center bg-black">
       <div class="relative">
