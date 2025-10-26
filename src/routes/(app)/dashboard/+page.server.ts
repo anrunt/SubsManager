@@ -8,7 +8,7 @@ import { redis_client } from "$lib/db/redis";
 import { subsCountTtl } from "$lib/helper/helper";
 import type { cachedDates } from "$lib/types/types";
 
-const MAX_SELECTION = 50;
+const MAX_SELECTION = 80;
 
 const deletedSubsNumberSchema = z.coerce.number();
 

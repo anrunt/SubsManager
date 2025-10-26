@@ -10,7 +10,7 @@ import type { GaxiosResponse } from 'gaxios';
 import { google, type youtube_v3 } from 'googleapis';
 import pLimit from "p-limit";
 
-const MAX_SELECTION = 50;
+const MAX_SELECTION = 80;
 
 const deletedSubsNumberSchema = z.coerce.number();
 
