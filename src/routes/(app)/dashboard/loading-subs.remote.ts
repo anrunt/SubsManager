@@ -293,7 +293,7 @@ export const getSubs = query(async () => {
       const errorReason = error.errors?.[0]?.reason;
       if (errorReason === 'insufficientPermissions') {
         console.error("User does not have YouTube permissions - redirecting to login");
-        throw redirect(302, "/login?error=youtube_permission_required");
+//        throw redirect(302, "/login?error=youtube_permission_required");
       }
     }
     
