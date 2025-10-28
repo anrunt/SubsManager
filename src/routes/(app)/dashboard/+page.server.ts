@@ -12,6 +12,11 @@ const MAX_SELECTION = 80;
 
 const deletedSubsNumberSchema = z.coerce.number();
 
+export const load = async (event) => {
+  if (event.locals.user === null) {
+    throw redirect(302, "/login");
+  }
+};
 
 export const actions: Actions = {
   deleteSubscriptions: async (event) => {
