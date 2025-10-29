@@ -1,7 +1,8 @@
 <script lang="ts">
   import { ArrowRight, Filter, Gauge, Trash2 } from "lucide-svelte";
-  let { data } = $props();
+  import { CldVideoPlayer } from "svelte-cloudinary";
 
+  let { data } = $props();
 </script>
 
 <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -81,4 +82,8 @@
       <p class="mt-2 text-sm leading-relaxed text-muted-foreground">Batch actions with clear confirmations.</p>
     </div>
   </div>
+</section>
+
+<section id="video-showcase" class="mx-auto max-w-6xl pb-24">
+  <CldVideoPlayer width="1920" height="1042" src="videos/managesubsvideo"/>
 </section>
