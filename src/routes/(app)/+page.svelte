@@ -85,5 +85,11 @@
 </section>
 
 <section id="video-showcase" class="mx-auto max-w-6xl pb-24">
-  <CldVideoPlayer width="1920" height="1080" src="managesubsvideo"/>
+  <div class="px-6">
+    <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-foreground">Watch how filtering and unsubscribing multiple channels works</h2>
+    <p class="mt-2 text-base md:text-lg text-muted-foreground">A short walkthrough of the complete flow: from filtering channels to bulk unsubscribing.</p>
+    <div class="mt-6">
+      <CldVideoPlayer width="1920" height="1080" src="managesubsvideo"/>
+    </div>
+  </div>
 </section>
