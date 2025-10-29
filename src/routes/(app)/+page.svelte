@@ -4,14 +4,13 @@
 
 </script>
 
-<section class="relative overflow-hidden">
-  <!-- background glow -->
-  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
-    <div class="absolute -top-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.35),transparent_60%)] blur-2xl"></div>
-    <div class="absolute -bottom-40 -right-40 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.35),transparent_60%)] blur-2xl"></div>
-    <div class="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_10%,rgba(255,255,255,0.08),transparent_60%)]"></div>
-  </div>
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+  <div class="absolute -top-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.35),transparent_60%)] blur-2xl"></div>
+  <div class="absolute -bottom-40 -right-40 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.35),transparent_60%)] blur-2xl"></div>
+  <div class="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_10%,rgba(255,255,255,0.08),transparent_60%)]"></div>
+</div>
 
+<section class="relative overflow-hidden">
   <div class="mx-auto max-w-6xl px-6 pt-24 pb-12 sm:pt-32 sm:pb-16">
     <div class="text-center space-y-6">
       <span class="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/30 px-3 py-1 text-xs font-medium text-muted-foreground">
@@ -19,7 +18,7 @@
       </span>
 
       <h1 class="text-5xl md:text-7xl font-bold tracking-tight">
-        <span class="bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">MoveSubs</span>
+        <span class="bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">SubsManager</span>
       </h1>
 
       <p class="mx-auto max-w-2xl text-balance text-muted-foreground leading-relaxed text-base md:text-lg">
@@ -34,7 +33,7 @@
             class="group inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 font-semibold text-white shadow-lg transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             Go to Dashboard
-            <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-0.5 will-change:transform" />
           </a>
         {:else}
           <a
@@ -51,12 +50,6 @@
             Learn more
           </a>
         {/if}
-      </div>
-
-      <div class="mt-12">
-        <div class="mx-auto max-w-4xl rounded-2xl border border-border/60 bg-card/30 p-3 shadow-2xl ring-1 ring-black/5">
-          <img src="/move-subs-logo.png" alt="MoveSubs logo" class="mx-auto h-16 w-auto opacity-90" />
-        </div>
       </div>
     </div>
   </div>
