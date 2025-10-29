@@ -153,11 +153,11 @@
         {#if currentData.remainingSubs === 0}
           {#if hours > 0}
             <p class="text-orange-600">
-              You've reached your daily limit of 50 subscription deletions. Try again in {hours} hour{hours > 1 ? 's' : ''}.
+              You've reached your daily limit of 80 subscription deletions. Try again in {hours} hour{hours > 1 ? 's' : ''}.
             </p>
           {:else}
             <p class="text-orange-600">
-              You've reached your daily limit of 50 subscription deletions. Try again in {minutes} minute{minutes > 1 ? 's' : ''}.
+              You've reached your daily limit of 80 subscription deletions. Try again in {minutes} minute{minutes > 1 ? 's' : ''}.
             </p>
           {/if}
         {:else}

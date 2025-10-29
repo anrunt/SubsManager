@@ -46,14 +46,12 @@ export async function GET(event: RequestEvent): Promise<Response> {
   const googleUserId = claims.sub;
   const username = claims.name;
   
-  // Check if YouTube scope was granted
   const grantedScopes = tokens.scopes();
   const requiredYouTubeScope = "https://www.googleapis.com/auth/youtube";
   
   if (!grantedScopes.includes(requiredYouTubeScope)) {
     console.error(`User ${googleUserId} did not grant YouTube permissions. Granted scopes:`, grantedScopes);
     
-    // Redirect back to login with error message
     return new Response(null, {
       status: 302,
       headers: {
