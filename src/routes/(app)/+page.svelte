@@ -85,5 +85,5 @@
 </section>
 
 <section id="video-showcase" class="mx-auto max-w-6xl pb-24">
-  <CldVideoPlayer width="1920" height="1042" src="videos/managesubsvideo"/>
+  <CldVideoPlayer width="1920" height="1080" src="managesubsvideo"/>
 </section>
