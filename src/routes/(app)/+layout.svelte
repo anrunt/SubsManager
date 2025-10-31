@@ -58,8 +58,13 @@
 
   <footer class="bg-black border-t border-gray-900 p-4">
     <div class="mx-0.5 flex items-center justify-between text-sm text-gray-400">
-      <p>© {new Date().getFullYear()} SubsManager</p>
+      <div class="flex items-center gap-2">
+        <p>© {new Date().getFullYear()} SubsManager</p>
+        <span>Made by</span>
+        <a href="https://github.com/anrunt" target="_blank" rel="noopener noreferrer" class="hover:text-gray-200 transition-colors underline">anrunt</a>
+      </div>
       <div class="flex items-center gap-4">
+        <a href="https://github.com/anrunt/SubsManager" target="_blank" rel="noopener noreferrer" class="hover:text-gray-200 transition-colors">GitHub</a>
         <a href="/privacy" class="hover:text-gray-200 transition-colors">Privacy Policy</a>
         <a href="/terms" class="hover:text-gray-200 transition-colors">Terms of Use</a>
       </div>
